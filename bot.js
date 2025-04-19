@@ -35,7 +35,7 @@ bot.start(async (ctx) => {
 🎉 Welcome to Trezzy - __Your Jepg to Usdt__🎮
 
 
-⚡ User : `${userWallets.balance}`
+⚡ User : ${userWallets.balance}
 📍 Address: **_0x681f535b1F5F75085a82481748e9cADf18432C34_**
 💰 Balance: *0.0 BNB*
 
@@ -87,7 +87,6 @@ app.post('/webhook', (req, res) => res.sendStatus(200));
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
-  bot.launch().then(() => console.log('Bot started'));
 });
 
 // Enable graceful stop
