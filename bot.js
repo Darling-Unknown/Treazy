@@ -78,40 +78,27 @@ bot.catch((err, ctx) => {
   console.error(`Error for ${ctx.updateType}:`, err);
   ctx.reply('❌ An error occurred. Please try again.');
 });
-// Webhook setup (replace only the bottom part of your existing code)
+// Replace everything after your command handlers with this:
+
+// ================= WEBHOOK SETUP =================
+app.use(express.json()); // Add JSON body parser
+
+// Health check endpoint (required for Render.com)
+app.get('/', (req, res) => {
+  res.status(200).json({ status: 'active', timestamp: Date.now() });
+});
+
+// Webhook endpoint
+app.post('/webhook', bot.webhookCallback('/webhook'));
+
+// Start server
 const PORT = process.env.PORT || 3000;
-
-// Auto-restart function
-function startBot() {
-  app.use(bot.webhookCallback('/webhook'));
+app.listen(PORT, () => {
+  console.log(`Webhook server ready on port ${PORT}`);
   
-  app.listen(PORT, async () => {
-    console.log(`Server running on port ${PORT}`);
-    try {
-      await bot.launch({
-        webhook: {
-          domain: process.env.WEBHOOK_URL,
-          port: PORT
-        }
-      });
-      console.log('Bot running in webhook mode');
-    } catch (err) {
-      console.error('Bot crashed:', err);
-      setTimeout(startBot, 1000); // Restart after 1 second
-    }
-  });
-}
-
-// Error handlers that force restart
-process.on('uncaughtException', (err) => {
-  console.error('CRASH:', err);
-  setTimeout(startBot, 1000);
+  // Bot will activate when first webhook request arrives
+  console.log('Bot will wake on first request...');
 });
 
-process.on('unhandledRejection', (err) => {
-  console.error('REJECTION:', err);
-  setTimeout(startBot, 1000);
-});
-
-// Start the bot
-startBot();
+// No need for bot.launch() - webhookCallback handles it automatically
+// ==================================================
