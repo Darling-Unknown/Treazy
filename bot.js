@@ -35,7 +35,7 @@ bot.start(async (ctx) => {
 🎉 Welcome to Trezzy - __Your Jepg to Usdt__🎮
 
 
-⚡ User : ```3444243```
+⚡ User : ||344424865||
 📍 Address: **_0x681f535b1F5F75085a82481748e9cADf18432C34_**
 💰 Balance: *0.0 BNB*
 
@@ -45,7 +45,7 @@ bot.start(async (ctx) => {
 - 🔥 Discover trending collections
 - 💰 Earn from trading fees
 
-~Use the buttons below to get started!~  
+__Use the buttons below to get started!__
 
 *(Inspired by @Unknown_WebG)*
   `;
