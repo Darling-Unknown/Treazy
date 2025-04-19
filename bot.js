@@ -32,19 +32,24 @@ bot.start(async (ctx) => {
 
   // Format the welcome message
   const welcomeMessage = `
-🎉 *Welcome to Trezzy - Fastest NFT Trading Bot* 🎮
+Here’s the cleaned-up, easy-to-copy version of your **DeFi x NFT Hybrid** format:  
 
-⚡ *Instant BNB Testnet Wallet Created*
-📍 *Address:* \`${userWallet.address}\`
-💰 *Balance:* ${userWallet.balance} BNB
+---  
 
-✨ *What you can do:*
-- 🛍️ Buy/Sell NFTs instantly
-- 🏷️ Create & auction your NFTs
-- 🔥 Discover trending collections
-- 💰 Earn from trading fees
+**📈 TREAZY – JPG 💱 USD**  
+*"Your JPEGs just got a utility upgrade."*  
 
-Use the buttons below to get started!
+💳 **Wallet:** `{Address}` | 💸 **Liquidity:** `{balance}`  
+
+🔥 **Perks:**  
+• **Instant liquidity** – Sell NFTs in 1 click, no waiting.  
+• **Stake & earn** – Lock NFTs to generate passive income.  
+• **Whale watch** – Track big buys before they trend.  
+• **Fee-sharing** – Get 10% back on every trade.  
+
+📌 **Drop a contract. Let’s make your wallet smile.**  
+
+*(Inspired by @Unkn.)*
   `;
 
   // Create inline keyboard
