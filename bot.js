@@ -32,10 +32,10 @@ bot.start(async (ctx) => {
 
   // Format the welcome message
   const welcomeMessage = `
-🎉 Welcome to Trezzy - "Your Jepg to Usdt"🎮
+🎉 Welcome to Trezzy - __Your Jepg to Usdt__🎮
 
 
-⚡ User : 3444243
+⚡ User : ```3444243```
 📍 Address: **_0x681f535b1F5F75085a82481748e9cADf18432C34_**
 💰 Balance: *0.0 BNB*
 
