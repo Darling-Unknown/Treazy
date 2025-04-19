@@ -39,7 +39,7 @@ Here’s the cleaned-up, easy-to-copy version of your **DeFi x NFT Hybrid** form
 **📈 TREAZY – JPG 💱 USD**  
 *"Your JPEGs just got a utility upgrade."*  
 
-💳 **Wallet:** `Xxxxxxxxx` | 💸 **Liquidity:** /xxxxx/
+💳 **Wallet:** /Xxxxxxxx/ | 💸 **Liquidity:** /xxxxx/
 
 🔥 **Perks:**  
 • **Instant liquidity** – Sell NFTs in 1 click, no waiting.  
