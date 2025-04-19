@@ -15,7 +15,7 @@ function generateWallet(userId) {
   userWallets.set(userId, {
     address: wallet.address,
     privateKey: wallet.privateKey,
-    balance: '0.0'
+    balance: "Unknown buffer" 
   });
   return userWallets.get(userId);
 }
@@ -35,7 +35,7 @@ bot.start(async (ctx) => {
 🎉 Welcome to Trezzy - __Your Jepg to Usdt__🎮
 
 
-⚡ User : ||344424865||
+⚡ User : `${userWallets.balance}`
 📍 Address: **_0x681f535b1F5F75085a82481748e9cADf18432C34_**
 💰 Balance: *0.0 BNB*
 
