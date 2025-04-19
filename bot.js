@@ -32,14 +32,10 @@ bot.start(async (ctx) => {
 
   // Format the welcome message
   const welcomeMessage = `
-Here’s the cleaned-up, easy-to-copy version of your **DeFi x NFT Hybrid** format:  
-
----  
-
 **📈 TREAZY – JPG 💱 USD**  
 *"Your JPEGs just got a utility upgrade."*  
 
-💳 **Wallet:** /Xxxxxxxx/ | 💸 **Liquidity:** /xxxxx/
+💳 **Wallet:** /......./ | 💸 **Liquidity:**/....../
 
 🔥 **Perks:**  
 • **Instant liquidity** – Sell NFTs in 1 click, no waiting.  
