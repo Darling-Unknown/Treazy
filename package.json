@@ -1,0 +1,15 @@
+{
+  "name": "server_treazy",
+  "version": "1.0.0",
+  "main": "bot.js",
+  "scripts": {
+    "start": "node bot.js",
+    "dev": "nodemon bot.js"
+  },
+  "dependencies": {
+    "express": "^4.18.2",
+    "ethers": "^6.7.1",
+    "firebase-admin": "^11.11.0",
+    "cors": "^2.8.5"
+  }
+}
