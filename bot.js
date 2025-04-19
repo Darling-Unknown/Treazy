@@ -1,43 +1,45 @@
 const { Telegraf, Markup } = require('telegraf');
 const express = require('express');
-const { ethers } = require('ethers');
+const axios = require('axios');
 
 // Initialize bot and web server
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const app = express();
 
-// Mock wallet data - replace with real wallet generation
-const userWallets = new Map();
+// Wallet server configuration
+const WALLET_SERVER_URL = process.env.WALLET_SERVER_URL || 'http://localhost:3000';
 
-// Generate a testnet wallet for users
-function generateWallet(userId) {
-  const wallet = ethers.Wallet.createRandom();
-  userWallets.set(userId, {
-    address: wallet.address,
-    privateKey: wallet.privateKey,
-    balance: "Unknown buffer" 
-  });
-  return userWallets.get(userId);
+// Function to get or create wallet from external server
+async function getUserWallet(userId) {
+  try {
+    const response = await axios.post(`${WALLET_SERVER_URL}/get-wallet`, {
+      userId: userId.toString()
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Wallet server error:', error);
+    return null;
+  }
 }
 
 // /start command handler
 bot.start(async (ctx) => {
   const userId = ctx.from.id;
-  let userWallet = userWallets.get(userId);
   
-  // Create wallet if new user
-  if (!userWallet) {
-    userWallet = generateWallet(userId);
+  // Get wallet from external server
+  const wallet = await getUserWallet(userId);
+  
+  if (!wallet) {
+    return ctx.reply('❌ Failed to load wallet. Please try again later.');
   }
 
   // Format the welcome message
   const welcomeMessage = `
 🎉 Welcome to Trezzy - __Your Jepg to Usdt__🎮
 
-
-⚡ User : ${userWallets.balance}
-📍 Address: **_0x681f535b1F5F75085a82481748e9cADf18432C34_**
-💰 Balance: *0.0 BNB*
+⚡ User: ${userId}
+📍 Address: \`${wallet.address}\`
+💰 Balance: *${wallet.balance} BNB*
 
 ✨ What you can do:
 - 🛍️ Buy/Sell NFTs instantly
@@ -66,26 +68,18 @@ __Use the buttons below to get started!__
   });
 });
 
-// Button action handlers
-bot.action('bid_action', (ctx) => ctx.reply('🚀 Bid menu loading...'));
-bot.action('auction_action', (ctx) => ctx.reply('⏳ Your auctions will appear here'));
-bot.action('settings_action', (ctx) => ctx.reply('⚙️ Bot settings menu'));
-bot.action('create_action', (ctx) => ctx.reply('🎨 NFT creation wizard launched'));
-bot.action('trending_action', (ctx) => ctx.reply('🔥 Fetching trending NFTs...'));
-
-// Error handling
-bot.catch((err, ctx) => {
-  console.error(`Error for ${ctx.updateType}:`, err);
-  ctx.reply('❌ An error occurred. Please try again.');
-});
-// Replace everything after your command handlers with this:
+// ... [keep all your existing button action handlers] ...
 
 // ================= WEBHOOK SETUP =================
-app.use(express.json()); // Add JSON body parser
+app.use(express.json());
 
-// Health check endpoint (required for Render.com)
+// Health check endpoint
 app.get('/', (req, res) => {
-  res.status(200).json({ status: 'active', timestamp: Date.now() });
+  res.status(200).json({ 
+    status: 'active',
+    service: 'Trezzy NFT Bot',
+    timestamp: Date.now() 
+  });
 });
 
 // Webhook endpoint
@@ -94,11 +88,11 @@ app.post('/webhook', bot.webhookCallback('/webhook'));
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Webhook server ready on port ${PORT}`);
-  
-  // Bot will activate when first webhook request arrives
-  console.log('Bot will wake on first request...');
+  console.log(`Server ready on port ${PORT}`);
+  console.log(`Wallet server: ${WALLET_SERVER_URL}`);
 });
 
-// No need for bot.launch() - webhookCallback handles it automatically
-// ==================================================
+// Error handling
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
