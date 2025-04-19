@@ -78,18 +78,40 @@ bot.catch((err, ctx) => {
   console.error(`Error for ${ctx.updateType}:`, err);
   ctx.reply('❌ An error occurred. Please try again.');
 });
-
-// Set up Express web server
-app.use(bot.webhookCallback('/webhook'));
-app.post('/webhook', (req, res) => res.sendStatus(200));
-
-// Start the server
+// Webhook setup (replace only the bottom part of your existing code)
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => {
-  console.log(`Server running on port ${PORT}`);
-bot.launch().then(() => console.log('Bot started'));
+
+// Auto-restart function
+function startBot() {
+  app.use(bot.webhookCallback('/webhook'));
+  
+  app.listen(PORT, async () => {
+    console.log(`Server running on port ${PORT}`);
+    try {
+      await bot.launch({
+        webhook: {
+          domain: process.env.WEBHOOK_URL,
+          port: PORT
+        }
+      });
+      console.log('Bot running in webhook mode');
+    } catch (err) {
+      console.error('Bot crashed:', err);
+      setTimeout(startBot, 1000); // Restart after 1 second
+    }
+  });
+}
+
+// Error handlers that force restart
+process.on('uncaughtException', (err) => {
+  console.error('CRASH:', err);
+  setTimeout(startBot, 1000);
 });
 
-// Enable graceful stop
-process.once('SIGINT', () => bot.stop('SIGINT'));
-process.once('SIGTERM', () => bot.stop('SIGTERM'));
+process.on('unhandledRejection', (err) => {
+  console.error('REJECTION:', err);
+  setTimeout(startBot, 1000);
+});
+
+// Start the bot
+startBot();
