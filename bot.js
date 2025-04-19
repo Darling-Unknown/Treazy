@@ -32,20 +32,22 @@ bot.start(async (ctx) => {
 
   // Format the welcome message
   const welcomeMessage = `
-**📈 TREAZY – JPG 💱 USD**  
-*"Your JPEGs just got a utility upgrade."*  
+🎉 Welcome to Trezzy - "Your Jepg to Usdt"🎮
 
-💳 **Wallet:** /......./ | 💸 **Liquidity:**/....../
 
-🔥 **Perks:**  
-• **Instant liquidity** – Sell NFTs in 1 click, no waiting.  
-• **Stake & earn** – Lock NFTs to generate passive income.  
-• **Whale watch** – Track big buys before they trend.  
-• **Fee-sharing** – Get 10% back on every trade.  
+⚡ User : 3444243
+📍 Address: **_0x681f535b1F5F75085a82481748e9cADf18432C34_**
+💰 Balance: *0.0 BNB*
 
-📌 **Drop a contract. Let’s make your wallet smile.**  
+✨ What you can do:
+- 🛍️ Buy/Sell NFTs instantly
+- 🏷️ Create & auction your NFTs
+- 🔥 Discover trending collections
+- 💰 Earn from trading fees
 
-*(Inspired by @Unkn.)*
+~Use the buttons below to get started!~  
+
+*(Inspired by @Unknown_WebG)*
   `;
 
   // Create inline keyboard
