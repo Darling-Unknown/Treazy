@@ -32,13 +32,13 @@ bot.start(async (ctx) => {
   }
 
   const welcomeMessage = `
-🎉 Welcome to Trezzy - __Your Jepg to Usdt__🎮
+🎉 *Welcome to Trezzy - __Your Jepg to Usdt__* 🎮
 
-⚡ User: ${userId}
-📍 Address: \`${wallet.address}\`
-💰 Balance: *${wallet.balance} BNB*
+⚡ *User:* \`${userId}\`
+📍 *Address:* \`${wallet.address}\`
+💰 *Balance:* *${wallet.balance} BNB*
 
-✨ What you can do:
+✨ *What you can do:*
 - 🛍️ Trade NFTs instantly
 - 🏷️ Create & auction your NFTs
 - 🔥 Discover trending collections
@@ -49,7 +49,6 @@ __Use the buttons below to get started!__
 *(Inspired by @Unknown_WebG)*
   `;
 
-  // Define inline keyboard explicitly
   const inlineKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🔼 Bid', 'bid_action')],
     [
@@ -62,16 +61,11 @@ __Use the buttons below to get started!__
     ]
   ]);
 
-  // Send photo with caption and inline keyboard
-  await ctx.replyWithPhoto(
-    Input.fromLocalFile('./image.jpg'), // Replace with your image path
-    {
-      caption: welcomeMessage,
-      parse_mode: 'Markdown',
-      reply_markup: inlineKeyboard.reply_markup, // Attach keyboard here
-      disable_web_page_preview: true
-    }
-  );
+  await ctx.reply(welcomeMessage, {
+    parse_mode: 'Markdown',
+    reply_markup: inlineKeyboard.reply_markup,
+    disable_web_page_preview: true
+  });
 });
 // ... [keep all your existing button action handlers] ...
 
