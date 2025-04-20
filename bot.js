@@ -77,7 +77,19 @@ bot.action('settings_action', async (ctx) => {
   ]);
 
   await ctx.editMessageText(
-    '⚙️ *Settings Menu*\n\nChoose an option:',
+    '⚙️ Settings Panel  
+
+💰 Fee Status: *10% discount active (referred user)*  
+
+🔥 **Burn Nfts Created and Reclaim Your Bnb 🤙**
+
+📌 Trading Preferences:  
+
+- 🔴🟢 Confirm Trades:  *(Green=Instant, Red=Confirm)*  
+
+🔘 Quick Actions:  
+
+- click below ',
     {
       parse_mode: 'Markdown',
       reply_markup: settingsKeyboard.reply_markup
