@@ -76,20 +76,7 @@ bot.action('settings_action', async (ctx) => {
     [Markup.button.callback('🔙 Back', 'back_to_main')]
   ]);
 
-  await ctx.editMessageText(
-    '⚙️ Settings Panel  
-
-💰 Fee Status: *10% discount active (referred user)*  
-
-🔥 **Burn Nfts Created and Reclaim Your Bnb 🤙**
-
-📌 Trading Preferences:  
-
-- 🔴🟢 Confirm Trades:  *(Green=Instant, Red=Confirm)*  
-
-🔘 Quick Actions:  
-
-- click below ',
+  await ctx.editMessageText('⚙️ Settings Panel\n\n💰 Fee Status: *10% discount active (referred user)*\n🔥 **Burn Nfts Created and Reclaim Your Bnb 🤙**\n\n📌 Trading Preferences:\n- 🔴🟢 Confirm Trades:  *(Green=Instant, Red=Confirm)*\n\n🔘 Quick Actions:\n\n-click below-',
     {
       parse_mode: 'Markdown',
       reply_markup: settingsKeyboard.reply_markup
