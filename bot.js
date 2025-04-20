@@ -7,7 +7,7 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 const app = express();
 
 // Wallet server configuration
-const WALLET_SERVER_URL = process.env.WALLET_SERVER_URL || 'http://localhost:3000';
+const WALLET_SERVER_U = process.env.WALLET_SERVER_URL || 'http://localhost:3000';
 
 // Function to get or create wallet from external server
 async function getUserWallet(userId) {
