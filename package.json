@@ -3,8 +3,8 @@
   "version": "1.0.0",
   "main": "bot.js",
   "scripts": {
-    "start": "node bot.js",
-    "dev": "nodemon bot.js"
+    "start": "node t_server.js",
+    "dev": "nodemon t_server.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
