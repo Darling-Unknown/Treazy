@@ -67,6 +67,113 @@ __Use the buttons below to get started!__
     disable_web_page_preview: true
   });
 });
+// Add this near your other action handlers
+bot.action('settings_action', async (ctx) => {
+  // Create settings menu with two buttons
+  const settingsKeyboard = Markup.inlineKeyboard([
+    [Markup.button.callback('🔑 Private Key', 'get_private_key')],
+    [Markup.button.callback('⚙️ Other Settings', 'other_settings')],
+    [Markup.button.callback('🔙 Back', 'back_to_main')]
+  ]);
+
+  await ctx.editMessageText(
+    '⚙️ *Settings Menu*\n\nChoose an option:',
+    {
+      parse_mode: 'Markdown',
+      reply_markup: settingsKeyboard.reply_markup
+    }
+  );
+});
+
+// Handle private key request
+bot.action('get_private_key', async (ctx) => {
+  const userId = ctx.from.id;
+  
+  try {
+    // Show "loading" message
+    await ctx.answerCbQuery('Fetching your private key...');
+    
+    // Fetch wallet from your server
+    const wallet = await getUserWallet(userId);
+    
+    if (!wallet) {
+      return ctx.reply('❌ Wallet not found. Please try again later.');
+    }
+    
+    // Send private key with warning (in a private chat)
+    await ctx.replyWithMarkdown(
+      `🔐 *Your Private Key*\n\n` +
+      `\`${wallet.privateKey}\`\n\n` +
+      `⚠️ *WARNING:* Never share this key with anyone! ` +
+      `Anyone with this key can access your funds permanently.`,
+      { parse_mode: 'Markdown' }
+    );
+    
+    // Delete the message after 30 seconds for security
+    setTimeout(async () => {
+      try {
+        await ctx.deleteMessage();
+      } catch (err) {
+        console.error('Could not delete private key message:', err);
+      }
+    }, 30000);
+    
+  } catch (err) {
+    console.error('Error fetching private key:', err);
+    await ctx.reply('❌ Failed to retrieve private key. Please try again later.');
+  }
+});
+
+// Placeholder for other settings
+bot.action('other_settings', (ctx) => {
+  ctx.answerCbQuery('Other settings coming soon!');
+});
+
+// Back to main menu
+bot.action('back_to_main', async (ctx) => {
+  const userId = ctx.from.id;
+  const wallet = await getUserWallet(userId);
+
+  if (!wallet) {
+    return ctx.reply('❌ Failed to load wallet. Please try again later.');
+  }
+
+  const welcomeMessage = `
+🎉 *Welcome to Trezzy - __Your Jepg to Usdt__* 🎮
+
+⚡ *User:* \`${userId}\`
+📍 *Address:* \`${wallet.address}\`
+💰 *Balance:* *${wallet.balance} BNB*
+
+✨ *What you can do:*
+- 🛍️ Trade NFTs instantly
+- 🏷️ Create & auction your NFTs
+- 🔥 Discover trending collections
+- 💰 Earn from trading fees
+
+__Use the buttons below to get started!__
+
+*(Inspired by @Unknown_WebG)*
+  `;
+
+  const inlineKeyboard = Markup.inlineKeyboard([
+    [Markup.button.callback('🔼 Bid', 'bid_action')],
+    [
+      Markup.button.callback('🏷️ Auction', 'auction_action'),
+      Markup.button.callback('⚙️ Settings', 'settings_action')
+    ],
+    [
+      Markup.button.callback('🛠️ Create NFT', 'create_action'),
+      Markup.button.callback('📈 Trending', 'trending_action')
+    ]
+  ]);
+
+  await ctx.editMessageText(welcomeMessage, {
+    parse_mode: 'Markdown',
+    reply_markup: inlineKeyboard.reply_markup,
+    disable_web_page_preview: true
+  });
+});
 // ... [keep all your existing button action handlers] ...
 
 // ================= WEBHOOK SETUP =================
