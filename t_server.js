@@ -4,7 +4,7 @@ const admin = require('firebase-admin');
 const cors = require('cors');
 
 // Initialize Firebase
-const serviceAccount = require('./.env'); // Download from Firebase console
+const serviceAccount = require('./key.json'); // Download from Firebase console
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
 });
