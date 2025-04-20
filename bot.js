@@ -21,18 +21,16 @@ async function getUserWallet(userId) {
     return null;
   }
 }
-// /start command handler
+//
+
 bot.start(async (ctx) => {
   const userId = ctx.from.id;
-
-  // Get wallet from external server
   const wallet = await getUserWallet(userId);
 
   if (!wallet) {
     return ctx.reply('❌ Failed to load wallet. Please try again later.');
   }
 
-  // Format the welcome message (this will be the photo caption)
   const welcomeMessage = `
 🎉 Welcome to Trezzy - __Your Jepg to Usdt__🎮
 
@@ -41,7 +39,7 @@ bot.start(async (ctx) => {
 💰 Balance: *${wallet.balance} BNB*
 
 ✨ What you can do:
-- 🛍️ Buy/Sell NFTs instantly
+- 🛍️ Trade NFTs instantly
 - 🏷️ Create & auction your NFTs
 - 🔥 Discover trending collections
 - 💰 Earn from trading fees
@@ -51,21 +49,27 @@ __Use the buttons below to get started!__
 *(Inspired by @Unknown_WebG)*
   `;
 
-  // Create inline keyboard
-  const keyboard = Markup.inlineKeyboard([
+  // Define inline keyboard explicitly
+  const inlineKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🔼 Bid', 'bid_action')],
-    [Markup.button.callback('🏷️ Auction', 'auction_action'), 
-     Markup.button.callback('⚙️ Settings', 'settings_action')],
-    [Markup.button.callback('🛠️ Create NFT', 'create_action'),
-     Markup.button.callback('📈 Trending', 'trending_action')]
+    [
+      Markup.button.callback('🏷️ Auction', 'auction_action'),
+      Markup.button.callback('⚙️ Settings', 'settings_action')
+    ],
+    [
+      Markup.button.callback('🛠️ Create NFT', 'create_action'),
+      Markup.button.callback('📈 Trending', 'trending_action')
+    ]
   ]);
 
+  // Send photo with caption and inline keyboard
   await ctx.replyWithPhoto(
-    Input.fromLocalFile('.image.jpg'), // Local file path
+    Input.fromLocalFile('./assets/welcome.jpg'), // Replace with your image path
     {
       caption: welcomeMessage,
       parse_mode: 'Markdown',
-      ...keyboard,
+      reply_markup: inlineKeyboard.reply_markup, // Attach keyboard here
+      disable_web_page_preview: true
     }
   );
 });
