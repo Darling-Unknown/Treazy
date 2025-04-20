@@ -64,7 +64,7 @@ __Use the buttons below to get started!__
 
   // Send photo with caption and inline keyboard
   await ctx.replyWithPhoto(
-    Input.fromLocalFile('.image.jpg'), // Replace with your image path
+    Input.fromLocalFile('./image.jpg'), // Replace with your image path
     {
       caption: welcomeMessage,
       parse_mode: 'Markdown',
