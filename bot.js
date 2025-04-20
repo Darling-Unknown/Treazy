@@ -60,14 +60,12 @@ __Use the buttons below to get started!__
      Markup.button.callback('📈 Trending', 'trending_action')]
   ]);
 
-  // Send photo with caption and buttons
   await ctx.replyWithPhoto(
-    { url: 'https://imgur.com/a/RbmPSs6.jpg' }, // Replace with your image URL
+    Input.fromLocalFile('.image.jpg'), // Local file path
     {
       caption: welcomeMessage,
       parse_mode: 'Markdown',
       ...keyboard,
-      disable_web_page_preview: true
     }
   );
 });
