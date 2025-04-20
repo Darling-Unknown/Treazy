@@ -21,19 +21,18 @@ async function getUserWallet(userId) {
     return null;
   }
 }
-
 // /start command handler
 bot.start(async (ctx) => {
   const userId = ctx.from.id;
-  
+
   // Get wallet from external server
   const wallet = await getUserWallet(userId);
-  
+
   if (!wallet) {
     return ctx.reply('❌ Failed to load wallet. Please try again later.');
   }
 
-  // Format the welcome message
+  // Format the welcome message (this will be the photo caption)
   const welcomeMessage = `
 🎉 Welcome to Trezzy - __Your Jepg to Usdt__🎮
 
@@ -61,13 +60,17 @@ __Use the buttons below to get started!__
      Markup.button.callback('📈 Trending', 'trending_action')]
   ]);
 
-  // Send message with wallet info and buttons
-  await ctx.replyWithMarkdown(welcomeMessage, {
-    ...keyboard,
-    disable_web_page_preview: true
-  });
+  // Send photo with caption and buttons
+  await ctx.replyWithPhoto(
+    { url: 'https://imgur.com/a/RbmPSs6.jpg' }, // Replace with your image URL
+    {
+      caption: welcomeMessage,
+      parse_mode: 'Markdown',
+      ...keyboard,
+      disable_web_page_preview: true
+    }
+  );
 });
-
 // ... [keep all your existing button action handlers] ...
 
 // ================= WEBHOOK SETUP =================
