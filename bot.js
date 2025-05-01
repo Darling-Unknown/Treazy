@@ -6,6 +6,32 @@ const axios = require('axios');
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const app = express();
 
+async function getHistoryButton(ctx) {
+  const userId = ctx.from.id;
+  const hasNew = await hasNewHistory(userId);
+  return Markup.button.callback(
+    hasNew ? '📜 History ✳️' : '📜 History',
+    'history'
+  );
+}
+async function hasNewHistory(userId) {
+  try {
+    const response = await axios.get(`${WALLET_SERVER_URL}/has-new-history/${userId}`);
+    return response.data.hasNew;
+  } catch (error) {
+    console.error('New history check failed:', error);
+    return false;
+  }
+}
+
+async function updateLastViewed(userId) {
+  try {
+    await axios.post(`${WALLET_SERVER_URL}/update-last-viewed`, { userId });
+  } catch (error) {
+    console.error('Failed to update last viewed:', error);
+  }
+}
+
 // Wallet server configuration
 const WALLET_SERVER_URL = process.env.SERVER || 'http://localhost:3000';
 const CLAIM_AMOUNT = 3000;
@@ -128,7 +154,7 @@ _{powered by Community 🤟 Vibes}©_
   const inlineKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🐬 Tasks', 'Tasks')],
     [
-      Markup.button.callback('📜 History', 'history'),
+      await getHistoryButton(ctx), // Dynamic button
       Markup.button.callback('⚙️ Settings', 'settings')
     ],
     [
@@ -199,6 +225,7 @@ bot.action('settings', async (ctx) => {
 bot.action('history', async (ctx) => {
   const userId = ctx.from.id;
   const history = await getHistory(userId);
+  await updateLastViewed(userId);
 
   const historyText = history.length > 0 
     ? `📜 *Your Recent Activities*\n\n` +
