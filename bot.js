@@ -60,6 +60,17 @@ async function getTasks(userId) {
   }
 }
 
+// Get task details
+async function getTaskDetails(taskId) {
+  try {
+    const response = await axios.get(`${WALLET_SERVER_URL}/get-task/${taskId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Get task error:', error);
+    return null;
+  }
+}
+
 // Submit task completion
 async function submitTask(data) {
   try {
