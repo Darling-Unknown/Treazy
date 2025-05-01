@@ -219,7 +219,7 @@ bot.action('settings', async (ctx) => {
 async function getHistoryButton(userId) {
   const hasUnread = await hasUnreadHistory(userId);
   return Markup.button.callback(
-    hasUnread ? '📜 History •' : '📜 History',
+    hasUnread ? '📜 History 🔸🔹' : '📜 History',
     'history'
   );
 }
