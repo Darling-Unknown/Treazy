@@ -283,64 +283,44 @@ app.post('/check-claim', async (req, res) => {
     res.status(500).json({ error: 'Server error during claim check' });
   }
 });
-// Add these endpoints to your server code
-
-// Endpoint to check for new history
-app.get('/has-new-history/:userId', async (req, res) => {
+// Mark all history as read
+app.post('/mark-history-read/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
+    const batch = db.batch();
     
-    // 1. Get last viewed time
-    const viewDoc = await db.collection('userViews').doc(userId).get();
-    const lastViewed = viewDoc.exists ? viewDoc.data().lastViewed?.toDate() : null;
-
-    // 2. Get newest history item
-    const newestHistory = await db.collection('userHistory')
+    const unreadItems = await db.collection('userHistory')
       .doc(userId)
       .collection('activities')
-      .orderBy('timestamp', 'desc')
-      .limit(1)
+      .where('unread', '==', true)
       .get();
 
-    // 3. Determine if there's new history
-    let hasNew = true;
-    
-    if (!newestHistory.empty) {
-      const newestTimestamp = newestHistory.docs[0].data().timestamp.toDate();
-      hasNew = !lastViewed || newestTimestamp > lastViewed;
-    } else {
-      hasNew = false; // No history exists
-    }
-
-    console.log(`History check for ${userId}:`, {
-      lastViewed,
-      newest: newestHistory.empty ? null : newestHistory.docs[0].data().timestamp.toDate(),
-      hasNew
+    unreadItems.forEach(doc => {
+      batch.update(doc.ref, { unread: false });
     });
 
-    res.json({ hasNew });
+    await batch.commit();
+    res.json({ success: true, markedRead: unreadItems.size });
   } catch (error) {
-    console.error('History check error:', error);
-    res.status(500).json({ error: 'Failed to check history' });
+    console.error('Mark read error:', error);
+    res.status(500).json({ error: 'Failed to mark as read' });
   }
 });
 
-// Endpoint to update last viewed time
-app.post('/update-last-viewed', async (req, res) => {
+// Check for unread notifications
+app.get('/has-unread-history/:userId', async (req, res) => {
   try {
-    const { userId } = req.body;
-    
-    await db.collection('userViews')
-      .doc(userId)
-      .set({
-        lastViewed: admin.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
+    const snapshot = await db.collection('userHistory')
+      .doc(req.params.userId)
+      .collection('activities')
+      .where('unread', '==', true)
+      .limit(1)
+      .get();
 
-    console.log(`Updated last viewed for ${userId}`);
-    res.json({ success: true });
+    res.json({ hasUnread: !snread.empty });
   } catch (error) {
-    console.error('Update error:', error);
-    res.status(500).json({ error: 'Failed to update last viewed' });
+    console.error('Unread check error:', error);
+    res.status(500).json({ error: 'Failed to check unread' });
   }
 });
 // Start server
