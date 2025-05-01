@@ -63,31 +63,20 @@ app.post('/create-task', async (req, res) => {
 });
 
 
-// Testing version of /get-tasks endpoint (no completed-task filtering)
 app.get('/get-tasks', async (req, res) => {
-  const { userId } = req.query;
-
   try {
-    // Get all active tasks
-    const tasksSnapshot = await db.collection('tasks')
-      .where('active', '==', true)
-      .where('deleteAt', '>', new Date())
-      .orderBy('deleteAt', 'asc')
-      .get();
+    const tasksSnapshot = await db.collection('tasks').get();
 
     const tasks = [];
     tasksSnapshot.forEach(doc => {
-      tasks.push({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate()?.toISOString()
-      });
+      console.log('Task:', doc.id, doc.data()); // Debug: log task data
+      tasks.push({ id: doc.id, ...doc.data() });
     });
 
     return res.json({ tasks });
   } catch (error) {
-    console.error('Get tasks error:', error);
-    res.status(500).json({ error: 'Failed to fetch tasks' });
+    console.error('Error fetching tasks:', error);
+    res.status(500).json({ error: 'Failed to fetch tasks', details: error.message });
   }
 });
 
