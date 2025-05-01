@@ -34,7 +34,7 @@ bot.start(async (ctx) => {
   const welcomeMessage = `
 🎉 ***TREZZY AIRDROP IS LIVE!***
 
-🔥*Earn free **Treez + Usdt***
+🔥**Earn free __Treez + Usdt__**
 
 ⚡ *User:* \`${userId}\`  
 📍 *Wallet Address:* \`${wallet.address}\`  
