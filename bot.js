@@ -12,13 +12,17 @@ const CLAIM_AMOUNT = 3000;
 
 // ================= UTILITY FUNCTIONS =================
 async function getHistoryButton(userId) {
-  return Markup.button.callback('📜 History', 'history');
-}
+  const labels = ['📜 History 🔸🔹', '📢 Notification ◻️', 'Recents 👀', '🔔 Beep👀'];
+  const randomLabel = labels[Math.floor(Math.random() * labels.length)];
 
+  return Markup.button.callback(randomLabel, 'history');
+}
 async function getfrens(userId) {
-  return Markup.button.callback('Friends 🤝', 'frens');
-}
+  const labels = ['Bro🤟', 'Team😎', 'Friends 🤝', 'Pack 🦊'];
+  const randomLabel = labels[Math.floor(Math.random() * labels.length)];
 
+  return Markup.button.callback(randomLabel, 'frens');
+}
 async function getUserWallet(userId) {
   try {
     const response = await axios.post(`${WALLET_SERVER_URL}/get-wallet`, {
