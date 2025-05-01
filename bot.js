@@ -200,15 +200,12 @@ bot.action('settings', async (ctx) => {
   );
 });
 
-// Dynamic history button
 async function getHistoryButton(userId) {
-  const hasUnread = await hasUnreadHistory(userId);
-  return Markup.button.callback(
-    hasUnread ? '📜 History 🔸🔹' : '📜 History',
-    'history'
-  );
-}
+  const labels = ['📜 History 🔸🔹', '📢 Notification ◻️', '🎶 Vibes🤟', '🔔 Beep👀'];
+  const randomLabel = labels[Math.floor(Math.random() * labels.length)];
 
+  return Markup.button.callback(randomLabel, 'history');
+}
 bot.action('history', async (ctx) => {
   const userId = ctx.from.id;
   
