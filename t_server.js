@@ -73,6 +73,98 @@ app.post('/get-wallet', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
+// Save history (type + message only)
+app.post('/save-history', async (req, res) => {
+  const { userId, type, message } = req.body;
+
+  if (!userId || !type || !message) {
+    return res.status(400).json({ error: 'User ID, type and message are required' });
+  }
+
+  try {
+    const historyRef = db.collection('userHistory').doc(userId).collection('activities').doc();
+    
+    await historyRef.set({
+      type,
+      message,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    return res.json({ 
+      success: true, 
+      message: 'History saved',
+      historyId: historyRef.id
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error while saving history' });
+  }
+});
+
+// Get latest 5 history items
+app.get('/get-history/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'User ID is required' });
+  }
+
+  try {
+    const snapshot = await db.collection('userHistory')
+      .doc(userId)
+      .collection('activities')
+      .orderBy('timestamp', 'desc')
+      .limit(5)
+      .get();
+
+    const history = snapshot.docs.map(doc => ({
+      id: doc.id,
+      type: doc.data().type,
+      message: doc.data().message,
+      timestamp: doc.data().timestamp?.toDate()?.toISOString()
+    }));
+
+    return res.json({ history });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error while fetching history' });
+  }
+});
+
+// Delete all history for a user
+app.delete('/delete-history/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  if (!userId) {
+    return res.status(400).json({ error: 'User ID is required' });
+  }
+
+  try {
+    // Get all documents in the subcollection
+    const activitiesRef = db.collection('userHistory')
+      .doc(userId)
+      .collection('activities');
+    
+    const snapshot = await activitiesRef.get();
+    
+    // Create a batch delete operation
+    const batch = db.batch();
+    snapshot.docs.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+    
+    await batch.commit();
+    
+    return res.json({ 
+      success: true,
+      message: `Deleted ${snapshot.size} history items`,
+      count: snapshot.size
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error while deleting history' });
+  }
+});
 
 // Start server
 const PORT = process.env.PORT || 3000;
