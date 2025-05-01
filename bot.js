@@ -194,7 +194,7 @@ bot.action('settings', async (ctx) => {
     }
   );
 });
-bot.action('History', async (ctx) => {
+bot.action('history', async (ctx) => {
 const userId = ctx.from.id;
 const history = await getHistory(userId);
 
