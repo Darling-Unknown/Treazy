@@ -5,6 +5,22 @@ const axios = require('axios');
 // Initialize bot and web server
 const bot = new Telegraf(process.env.BOT_TOKEN);
 const app = express();
+// Wallet server configuration
+const WALLET_SERVER_URL = process.env.SERVER || 'http://localhost:3000';
+const CLAIM_AMOUNT = 3000;
+
+// Function to get or create wallet from external server
+async function getUserWallet(userId) {
+  try {
+    const response = await axios.post(`${WALLET_SERVER_URL}/get-wallet`, {
+      userId: userId.toString()
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Wallet server error:', error);
+    return null;
+  }
+}
 
 async function getHistoryButton(ctx) {
   const userId = ctx.from.id;
@@ -32,22 +48,7 @@ async function updateLastViewed(userId) {
   }
 }
 
-// Wallet server configuration
-const WALLET_SERVER_URL = process.env.SERVER || 'http://localhost:3000';
-const CLAIM_AMOUNT = 3000;
 
-// Function to get or create wallet from external server
-async function getUserWallet(userId) {
-  try {
-    const response = await axios.post(`${WALLET_SERVER_URL}/get-wallet`, {
-      userId: userId.toString()
-    });
-    return response.data;
-  } catch (error) {
-    console.error('Wallet server error:', error);
-    return null;
-  }
-}
 
 async function saveHistory(userId, type, message) {
   try {
