@@ -29,21 +29,26 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
-
 // Get Task Details
 app.get('/get-task/:taskId', async (req, res) => {
+  const taskId = req.params.taskId;
+
   try {
-    const doc = await db.collection('tasks').doc(req.params.taskId).get();
+    const doc = await db.collection('tasks').doc(taskId).get();
+
     if (!doc.exists) {
       return res.status(404).json({ error: 'Task not found' });
     }
-    res.json({
+
+    const task = {
       ...doc.data(),
       id: doc.id,
       createdAt: doc.data().createdAt?.toDate()?.toISOString()
-    });
+    };
+
+    res.json(task);
   } catch (error) {
-    console.error(error);
+    console.error('Error fetching task:', error);
     res.status(500).json({ error: 'Server error' });
   }
 });
