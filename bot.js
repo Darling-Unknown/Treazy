@@ -196,8 +196,13 @@ bot.action('Tasks', async (ctx) => {
     [Markup.button.callback('🔙 Back', 'back_to_main')]
   ]);
 
-  await ctx.editMessageText('tasks: ${taskno}\n\n ${taskdesc}', {
-    parse_mode: 'Markdown',
+  // Fixed: Use editMessageMedia instead of editMessageText
+  await ctx.editMessageMedia({
+    type: 'photo',
+    media: { source: 'image.jpg' },
+    caption: '🎯 *Available Tasks*\n\n1. Join our Telegram group\n2. Follow us on Twitter\n3. Refer 3 friends\n\nComplete tasks to earn rewards!',
+    parse_mode: 'Markdown'
+  }, {
     reply_markup: settingsKeyboard.reply_markup
   });
 });
@@ -207,8 +212,13 @@ bot.action('x', async (ctx) => {
     [Markup.button.callback('🔙 Back', 'back_to_main')]
   ]);
 
-  await ctx.editMessageText('Submit The Early Adopter Code Below To Earn 10$ + 20,000points', {
-    parse_mode: 'Markdown',
+  // Fixed: Media-aware edit
+  await ctx.editMessageMedia({
+    type: 'photo',
+    media: { source: 'image.jpg' },
+    caption: 'Submit The Early Adopter Code Below To Earn 10$ + 20,000points',
+    parse_mode: 'Markdown'
+  }, {
     reply_markup: settingsKeyboard.reply_markup
   });
 });
@@ -220,8 +230,13 @@ bot.action('settings', async (ctx) => {
     [Markup.button.callback('🔙 Back', 'back_to_main')]
   ]);
 
-  await ctx.editMessageText('⚙️ Settings Panel {nuts and bolts🔩}', {
-    parse_mode: 'Markdown',
+  // Fixed: Media-aware edit
+  await ctx.editMessageMedia({
+    type: 'photo',
+    media: { source: 'image.jpg' },
+    caption: '⚙️ Settings Panel {nuts and bolts🔩}',
+    parse_mode: 'Markdown'
+  }, {
     reply_markup: settingsKeyboard.reply_markup
   });
 });
@@ -242,11 +257,17 @@ bot.action('history', async (ctx) => {
     [Markup.button.callback('🔙 Back', 'back_to_main')]
   ]);
 
-  await ctx.editMessageText(historyText, {
-    parse_mode: 'Markdown',
+  // Fixed: Media-aware edit
+  await ctx.editMessageMedia({
+    type: 'photo',
+    media: { source: 'image.jpg' },
+    caption: historyText,
+    parse_mode: 'Markdown'
+  }, {
     reply_markup: historyKeyboard.reply_markup
   });
 });
+
 
 bot.action('claim', async (ctx) => {
   const response = await handleClaim(ctx.from.id);
@@ -298,12 +319,11 @@ bot.action('clear', async (ctx) => {
 bot.action('other_settings', (ctx) => {
   ctx.answerCbQuery('Other settings coming soon!');
 });
-
 bot.action('back_to_main', async (ctx) => {
   const userId = ctx.from.id;
   const wallet = await getUserWallet(userId);
   const points = await getBalance(userId);
-  
+
   if (!wallet) {
     return ctx.reply('❌ Failed to load wallet. Please try again later.');
   }
@@ -344,6 +364,7 @@ bot.action('back_to_main', async (ctx) => {
     ]
   ]);
 
+  // Keep existing correct implementation
   await ctx.editMessageMedia({
     type: 'photo',
     media: { source: 'image.jpg' },
