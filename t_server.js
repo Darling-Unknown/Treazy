@@ -70,12 +70,11 @@ app.get('/get-tasks', async (req, res) => {
   try {
     // Get user's completed task IDs
     const submissions = await db.collection('taskSubmissions')
-      .where('userId', '==', userId)
-      .where('completed', '==', true)
-      .get();
+  .where('userId', '==', userId)
+  .where('completed', '==', true)
+  .get();
 
-    const completedTaskIds = submissions.docs.map(doc => doc.data().taskId);
-
+const completedTaskIds = submissions.docs.map(doc => doc.data().taskId);
     // Get active tasks not completed by user
     const tasksSnapshot = await db.collection('tasks')
       .where('active', '==', true)
@@ -85,12 +84,11 @@ app.get('/get-tasks', async (req, res) => {
 
     const tasks = [];
     tasksSnapshot.forEach(doc => {
-      if (!completedTaskIds.includes(doc.id)) {
-        tasks.push({
-          id: doc.id,
-          ...doc.data(),
-          createdAt: doc.data().createdAt?.toDate()?.toISOString()
-        });
+      tasks.push({
+  id: doc.id,
+  ...doc.data(),
+  createdAt: doc.data().createdAt?.toDate()?.toISOString()
+});
       }
     });
 
