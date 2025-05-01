@@ -26,7 +26,7 @@ async function getHistoryButton(ctx) {
   const userId = ctx.from.id;
   const hasNew = await hasNewHistory(userId);
   return Markup.button.callback(
-    hasNew ? '📜 History ✳️' : '📜 History',
+    hasNew ? '📜 History 🙈' : '📜 History',
     'history'
   );
 }
@@ -375,11 +375,12 @@ _{powered by Community 🤟 Vibes}©_
   const inlineKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🐬 Tasks', 'Tasks')],
     [
-      Markup.button.callback('📜 History', 'history'),
+      await getHistoryButton(ctx), // Dynamic button
       Markup.button.callback('⚙️ Settings', 'settings')
     ],
     [
       Markup.button.callback('💁 Niggas', 'frens'),
+      Markup.button.callback('⛏️claim', 'claim'),
       Markup.button.callback('@early adopters', 'x')
     ]
   ]);
