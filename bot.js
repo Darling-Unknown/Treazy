@@ -164,7 +164,7 @@ async function handleClaim(userId) {
     }
 
     // 3. Save to history
-    await saveHistory(userId, 'claim', 'You claimed your daily 🐥');
+    await saveHistory(userId, 'claim', 'Claimed 🤟 Points');
 
     return `🎉 You have claimed ${CLAIM_AMOUNT.toLocaleString()} points!\nNew balance: ${balanceResult.newBalance}`;
 
