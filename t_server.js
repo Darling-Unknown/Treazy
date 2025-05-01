@@ -283,38 +283,64 @@ app.post('/check-claim', async (req, res) => {
     res.status(500).json({ error: 'Server error during claim check' });
   }
 });
-// Add to your server endpoints
-app.post('/update-last-viewed', async (req, res) => {
-  try {
-    await db.collection('userViews')
-      .doc(req.body.userId)
-      .set({
-        lastViewedHistory: admin.firestore.FieldValue.serverTimestamp()
-      }, { merge: true });
-    res.json({ success: true });
-  } catch (error) {
-    res.status(500).json({ error: 'Server error' });
-  }
-});
+// Add these endpoints to your server code
 
+// Endpoint to check for new history
 app.get('/has-new-history/:userId', async (req, res) => {
   try {
-    const [viewDoc, historyDoc] = await Promise.all([
-      db.collection('userViews').doc(req.params.userId).get(),
-      db.collection('userHistory').doc(req.params.userId)
-        .collection('activities')
-        .orderBy('timestamp', 'desc')
-        .limit(1)
-        .get()
-    ]);
+    const userId = req.params.userId;
+    
+    // 1. Get last viewed time
+    const viewDoc = await db.collection('userViews').doc(userId).get();
+    const lastViewed = viewDoc.exists ? viewDoc.data().lastViewed?.toDate() : null;
 
-    const hasNew = !viewDoc.exists || 
-                  (historyDoc.size > 0 && 
-                   historyDoc.docs[0].data().timestamp > viewDoc.data().lastViewedHistory);
+    // 2. Get newest history item
+    const newestHistory = await db.collection('userHistory')
+      .doc(userId)
+      .collection('activities')
+      .orderBy('timestamp', 'desc')
+      .limit(1)
+      .get();
+
+    // 3. Determine if there's new history
+    let hasNew = true;
+    
+    if (!newestHistory.empty) {
+      const newestTimestamp = newestHistory.docs[0].data().timestamp.toDate();
+      hasNew = !lastViewed || newestTimestamp > lastViewed;
+    } else {
+      hasNew = false; // No history exists
+    }
+
+    console.log(`History check for ${userId}:`, {
+      lastViewed,
+      newest: newestHistory.empty ? null : newestHistory.docs[0].data().timestamp.toDate(),
+      hasNew
+    });
 
     res.json({ hasNew });
   } catch (error) {
-    res.status(500).json({ error: 'Server error' });
+    console.error('History check error:', error);
+    res.status(500).json({ error: 'Failed to check history' });
+  }
+});
+
+// Endpoint to update last viewed time
+app.post('/update-last-viewed', async (req, res) => {
+  try {
+    const { userId } = req.body;
+    
+    await db.collection('userViews')
+      .doc(userId)
+      .set({
+        lastViewed: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+
+    console.log(`Updated last viewed for ${userId}`);
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Update error:', error);
+    res.status(500).json({ error: 'Failed to update last viewed' });
   }
 });
 // Start server
