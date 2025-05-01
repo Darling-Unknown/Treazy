@@ -36,16 +36,18 @@ async function saveHistory(userId, type, message) {
     return { success: false };
   }
 }
+// Update your getHistory function to better handle the response:
 async function getHistory(userId) {
   try {
     const response = await axios.get(`${WALLET_SERVER_URL}/get-history/${userId}`);
-    return response.data.history || [];
+    return response.data?.history?.map(item => ({
+      ...item,
+      // Convert Firestore timestamp to readable format
+      timestamp: item.timestamp || new Date().toISOString()
+    })) || [];
   } catch (error) {
-    console.error('Get history error:', error.response?.data || error.message);
-    return {
-      error: error.response?.data?.error || 'Failed to fetch history',
-      history: []
-    };
+    console.error('Get history error:', error);
+    return [];
   }
 }
 async function deleteHistory(userId) {
@@ -212,29 +214,26 @@ async function getfrens(userId) {
 }
 bot.action('history', async (ctx) => {
   const userId = ctx.from.id;
-  
-  try {// 2. THEN get history
-    const history = await getHistory(userId);
-    
-    // 3. Format the response
-    const historyText = history.length > 0
-      ? `📜 Your History:\n\n${history.map((item, i) => 
-          `${i+1}. ${item.message}\n   ⌚ ${new Date(item.timestamp).toLocaleString()}`
-        ).join('\n\n')}`
-      : "📭 No history yet!";
-    
-    await ctx.editMessageText(historyText, {
-      reply_markup: Markup.inlineKeyboard([
-        [Markup.button.callback('🗑️ Clear History', 'clear_history')],
-        [Markup.button.callback('🔙 Back', 'back_to_main')]
-      ]).reply_markup
-    });
-    
-  } catch (error) {
-    console.error('History command failed:', error);
-    await ctx.reply('❌ Failed to load history. Please try again.');
-  }
+  const history = await getHistory(userId);
+
+  const historyText = history.length > 0 
+    ? `📜 *Your Recent Activities*\n\n` +
+      history.slice(0, 10).map((item, index) => 
+        `${index + 1}. ${item.message}\n   ⌚ ${formatDate(item.timestamp)}`
+      ).join('\n\n')
+    : "📭 No history yet!";
+
+  const historyKeyboard = Markup.inlineKeyboard([
+    [Markup.button.callback('🗑️ Clear History', 'clear')],
+    [Markup.button.callback('🔙 Back', 'back_to_main')]
+  ]);
+
+  await ctx.editMessageText(historyText, {
+    parse_mode: 'Markdown',
+    reply_markup: historyKeyboard.reply_markup
+  });
 });
+
 // Helper function to format dates
 function formatDate(timestamp) {
   const date = new Date(timestamp);
@@ -245,6 +244,7 @@ function formatDate(timestamp) {
     minute: '2-digit'
   });
 }
+
 bot.action('Tasks', async (ctx) => {
   // Create settings menu with two buttons
   const settingsKeyboard = Markup.inlineKeyboard([
