@@ -8,6 +8,7 @@ const app = express();
 
 // Wallet server configuration
 const WALLET_SERVER_URL = process.env.SERVER || 'http://localhost:3000';
+const CLAIM_AMOUNT = 3000;
 
 // Function to get or create wallet from external server
 async function getUserWallet(userId) {
@@ -141,6 +142,42 @@ _{powered by Community 🤟 Vibes}©_
     disable_web_page_preview: true
   });
 });
+
+
+async function handleClaim(userId) {
+  try {
+    // 1. Check claim cooldown status
+    const cooldownCheck = await axios.post(`${WALLET_SERVER_URL}/check-claim`, {
+      userId: userId.toString()
+    });
+
+    if (!cooldownCheck.data.canClaim) {
+      return `⏳ Come back in ${cooldownCheck.data.hoursLeft} hour(s) to claim again`;
+    }
+
+    // 2. Update balance (frontend)
+    const balanceResult = await updateBalance(userId, 'add', CLAIM_AMOUNT, 'Daily claim');
+    if (!balanceResult.success) {
+      throw new Error('Failed to update balance');
+    }
+
+    // 3. Save to history
+    await saveHistory(userId, 'claim', 'You claimed your daily 🐥');
+
+    return `🎉 You have claimed ${CLAIM_AMOUNT.toLocaleString()} points!\nNew balance: ${balanceResult.newBalance}`;
+
+  } catch (error) {
+    console.error('Claim failed:', error);
+    return '❌ Failed to process claim. Please try again later.';
+  }
+}
+
+// Attach to your button
+bot.action('claim', async (ctx) => {
+  const response = await handleClaim(ctx.from.id);
+  ctx.reply(response);
+});
+
 // Add this near your other action handlers
 bot.action('settings', async (ctx) => {
   // Create settings menu with two buttons
