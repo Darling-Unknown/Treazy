@@ -32,32 +32,34 @@ bot.start(async (ctx) => {
   }
 
   const welcomeMessage = `
-🎉 *Welcome to Trezzy - __Your Jepg to Usdt__* 🎮
+🎉 **🚀 *TREZZY AIRDROP IS LIVE!* 🚀** 🎉  
 
-⚡ *User:* \`${userId}\`
-📍 *Address:* \`${wallet.address}\`
-💰 *Balance:* *${wallet.balance} BNB*
+🔥*Earn free Treezy and Usdt*🔥  
 
-✨ *What you can do:*
-- 🛍️ Trade NFTs instantly
-- 🏷️ Create & auction your NFTs
-- 🔥 Discover trending collections
-- 💰 Earn from trading fees
+⚡ *User:* \`${userId}\`  
+📍 *Wallet Address:* \`${wallet.address}\`  
+💰 *Bnb Balance*: *${wallet.balance} BNB*
+💲 *Usdt Balance*: xxxxx
+🤟 *Treazy Points*: xxxxxxx
+ 
+✨ **Make Sure To:**  
+- ✅ **Join our Telegram & Twitter** (xxxxxx)  
+- ✖️ **Follow our X page** (Xxx)
+- 🐥 **Complete Tasks to Earn Treazy and Usdt**
+- 🎁 **Bonus Entries:** Refer friends for extra rewards!
 
-__Use the buttons below to get started!__
-
-*(Inspired by @Unknown_WebG)*
+__{powered by Community 🤟 Vibes}©__
   `;
 
   const inlineKeyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('🔼 Bid', 'bid_action')],
+    [Markup.button.callback('🐬 Tasks', 'Tasks')],
     [
-      Markup.button.callback('🏷️ Auction', 'auction_action'),
-      Markup.button.callback('⚙️ Settings', 'settings_action')
+      Markup.button.callback('📜 History', 'history'),
+      Markup.button.callback('⚙️ Settings', 'settings')
     ],
     [
-      Markup.button.callback('🛠️ Create NFT', 'create_action'),
-      Markup.button.callback('📈 Trending', 'trending_action')
+      Markup.button.callback('💁 Niggas', 'frens'),
+      Markup.button.callback('@early adopters', 'x')
     ]
   ]);
 
@@ -68,7 +70,7 @@ __Use the buttons below to get started!__
   });
 });
 // Add this near your other action handlers
-bot.action('settings_action', async (ctx) => {
+bot.action('settings', async (ctx) => {
   // Create settings menu with two buttons
   const settingsKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🔑 Private Key', 'get_private_key')],
@@ -76,7 +78,7 @@ bot.action('settings_action', async (ctx) => {
     [Markup.button.callback('🔙 Back', 'back_to_main')]
   ]);
 
-  await ctx.editMessageText('⚙️ Settings Panel\n\n💰 Fee Status: *10% discount active (referred user)*\n🔥 **Burn Nfts Created and Reclaim Your Bnb 🤙**\n\n📌 Trading Preferences:\n- 🔴🟢 Confirm Trades:  *(Green=Instant, Red=Confirm)*\n\n🔘 Quick Actions:\n\n-click below-',
+  await ctx.editMessageText('⚙️ Settings Panel __{nuts and bolts🔩}__',
     {
       parse_mode: 'Markdown',
       reply_markup: settingsKeyboard.reply_markup
@@ -115,7 +117,7 @@ bot.action('get_private_key', async (ctx) => {
       } catch (err) {
         console.error('Could not delete private key message:', err);
       }
-    }, 30000);
+    }, 10000);
     
   } catch (err) {
     console.error('Error fetching private key:', err);
@@ -137,33 +139,35 @@ bot.action('back_to_main', async (ctx) => {
     return ctx.reply('❌ Failed to load wallet. Please try again later.');
   }
 
-  const welcomeMessage = `
-🎉 *Welcome to Trezzy - __Your Jepg to Usdt__* 🎮
+ const welcomeMessage = `
+🎉 **🚀 *TREZZY AIRDROP IS LIVE!* 🚀** 🎉  
 
-⚡ *User:* \`${userId}\`
-📍 *Address:* \`${wallet.address}\`
-💰 *Balance:* *${wallet.balance} BNB*
+🔥*Earn free Treezy and Usdt*🔥  
 
-✨ *What you can do:*
-- 🛍️ Trade NFTs instantly
-- 🏷️ Create & auction your NFTs
-- 🔥 Discover trending collections
-- 💰 Earn from trading fees
+⚡ *User:* \`${userId}\`  
+📍 *Wallet Address:* \`${wallet.address}\`  
+💰 *Bnb Balance*: *${wallet.balance} BNB*
+💲 *Usdt Balance*: xxxxx
+🤟 *Treazy Points*: xxxxxxx
+ 
+✨ **Make Sure To:**  
+- ✅ **Join our Telegram & Twitter** (xxxxxx)  
+- ✖️ **Follow our X page** (Xxx)
+- 🐥 **Complete Tasks to Earn Treazy and Usdt**
+- 🎁 **Bonus Entries:** Refer friends for extra rewards!
 
-__Use the buttons below to get started!__
-
-*(Inspired by @Unknown_WebG)*
+__{powered by Community 🤟 Vibes}©__
   `;
 
   const inlineKeyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('🔼 Bid', 'bid_action')],
+    [Markup.button.callback('🐬 Tasks', 'Tasks')],
     [
-      Markup.button.callback('🏷️ Auction', 'auction_action'),
-      Markup.button.callback('⚙️ Settings', 'settings_action')
+      Markup.button.callback('📜 History', 'history'),
+      Markup.button.callback('⚙️ Settings', 'settings')
     ],
     [
-      Markup.button.callback('🛠️ Create NFT', 'create_action'),
-      Markup.button.callback('📈 Trending', 'trending_action')
+      Markup.button.callback('💁 Niggas', 'frens'),
+      Markup.button.callback('@early adopters', 'x')
     ]
   ]);
 
