@@ -250,7 +250,39 @@ app.get('/get-balance/:userId', async (req, res) => {
     res.status(500).json({ error: 'Server error while fetching balance' });
   }
 });
+// Claim cooldown endpoint
+app.post('/check-claim', async (req, res) => {
+  const { userId } = req.body;
+  const COOLDOWN_HOURS = 6;
 
+  try {
+    const doc = await db.collection('userClaims').doc(userId).get();
+    const now = new Date();
+    const lastClaim = doc.exists ? doc.data().lastClaim?.toDate() : null;
+
+    if (lastClaim) {
+      const nextClaim = new Date(lastClaim.getTime() + COOLDOWN_HOURS * 60 * 60 * 1000);
+      if (now < nextClaim) {
+        const hoursLeft = Math.ceil((nextClaim - now) / (60 * 60 * 1000));
+        return res.json({
+          canClaim: false,
+          hoursLeft
+        });
+      }
+    }
+
+    // Update last claim time
+    await db.collection('userClaims').doc(userId).set({
+      lastClaim: admin.firestore.FieldValue.serverTimestamp()
+    }, { merge: true });
+
+    return res.json({ canClaim: true });
+
+  } catch (error) {
+    console.error('Claim check error:', error);
+    res.status(500).json({ error: 'Server error during claim check' });
+  }
+});
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
