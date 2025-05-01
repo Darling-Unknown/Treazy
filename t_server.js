@@ -63,20 +63,46 @@ app.post('/create-task', async (req, res) => {
 });
 
 
+// Updated /get-tasks endpoint with manual deleteAt filtering
 app.get('/get-tasks', async (req, res) => {
-  try {
-    const tasksSnapshot = await db.collection('tasks').get();
+  const { userId } = req.query;
 
+  try {
+    // Get user's completed task IDs
+    const submissions = await db.collection('taskSubmissions')
+      .where('userId', '==', userId)
+      .where('completed', '==', true)
+      .get();
+
+    const completedTaskIds = submissions.docs.map(doc => doc.data().taskId);
+
+    // Get all active tasks (we'll filter deleteAt manually)
+    const tasksSnapshot = await db.collection('tasks')
+      .where('active', '==', true)
+      .orderBy('deleteAt', 'asc') // only needs single-field index
+      .get();
+
+    const now = new Date();
     const tasks = [];
     tasksSnapshot.forEach(doc => {
-      console.log('Task:', doc.id, doc.data()); // Debug: log task data
-      tasks.push({ id: doc.id, ...doc.data() });
+      const task = doc.data();
+      const deleteAt = task.deleteAt?.toDate?.();
+      if (
+        deleteAt > now && 
+        !completedTaskIds.includes(doc.id)
+      ) {
+        tasks.push({
+          id: doc.id,
+          ...task,
+          createdAt: task.createdAt?.toDate()?.toISOString()
+        });
+      }
     });
 
     return res.json({ tasks });
   } catch (error) {
-    console.error('Error fetching tasks:', error);
-    res.status(500).json({ error: 'Failed to fetch tasks', details: error.message });
+    console.error('Get tasks error:', error);
+    res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 });
 
