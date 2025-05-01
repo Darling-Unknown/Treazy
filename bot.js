@@ -369,7 +369,7 @@ bot.action(/^view_task_(.*)/, async (ctx) => {
   // If editing a photo message
   await ctx.editMessageMedia({
     type: 'photo',
-    media: { source: 'task.jpg' }, // Replace with your task image path
+    media: { source: 'image.jpg' }, // Replace with your task image path
     caption:
       `🛠️ *Task Details*\n\n` +
       `📝 ${task.description}\n\n` +
