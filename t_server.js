@@ -82,7 +82,6 @@ app.post('/create-task', async (req, res) => {
 });
 
 
-// Updated /get-tasks endpoint with manual deleteAt filtering
 app.get('/get-tasks', async (req, res) => {
   const { userId } = req.query;
 
@@ -95,21 +94,20 @@ app.get('/get-tasks', async (req, res) => {
 
     const completedTaskIds = submissions.docs.map(doc => doc.data().taskId);
 
-    // Get all active tasks (we'll filter deleteAt manually)
+    // Get all tasks marked as active
     const tasksSnapshot = await db.collection('tasks')
       .where('active', '==', true)
-      .orderBy('deleteAt', 'asc') // only needs single-field index
       .get();
 
     const now = new Date();
     const tasks = [];
+
     tasksSnapshot.forEach(doc => {
       const task = doc.data();
-      const deleteAt = task.deleteAt?.toDate?.();
-      if (
-        deleteAt > now && 
-        !completedTaskIds.includes(doc.id)
-      ) {
+      const deleteAt = task.deleteAt?.toDate?.() || now;
+
+      // Only include uncompleted tasks that haven't expired
+      if (!completedTaskIds.includes(doc.id) && deleteAt > now) {
         tasks.push({
           id: doc.id,
           ...task,
