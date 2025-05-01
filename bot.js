@@ -98,6 +98,7 @@ _{powered by Community 🤟 Vibes}©_
     ],
     [
       Markup.button.callback('💁 Niggas', 'frens'),
+      Markup.button.callback('⛏️claim', 'claim'),
       Markup.button.callback('@early adopters', 'x')
     ]
   ]);
