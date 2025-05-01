@@ -62,31 +62,6 @@ app.post('/create-task', async (req, res) => {
   }
 });
 
-// User - View Active Tasks
-app.get('/get-tasks', async (req, res) => {
-  try {
-    const snapshot = await db.collection('tasks')
-      .where('active', '==', true)
-      .where('deleteAt', '>', new Date())
-      .orderBy('deleteAt', 'asc')
-      .get();
-
-    const tasks = [];
-    snapshot.forEach(doc => {
-      tasks.push({
-        id: doc.id,
-        ...doc.data(),
-        createdAt: doc.data().createdAt?.toDate()?.toISOString(),
-        deleteAt: doc.data().deleteAt?.toDate()?.toISOString()
-      });
-    });
-
-    return res.json({ tasks });
-  } catch (error) {
-    console.error('Get tasks error:', error);
-    res.status(500).json({ error: 'Failed to fetch tasks' });
-  }
-});
 
 // Updated /get-tasks endpoint
 app.get('/get-tasks', async (req, res) => {
