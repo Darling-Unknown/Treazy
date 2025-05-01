@@ -318,15 +318,11 @@ bot.action('clear', async (ctx) => {
   const result = await deleteHistory(userId);
   
   if (result.success) {
-    await ctx.editMessageText('✅ History cleared successfully!');
+    await ctx.editMessageText('🧹 History cleared successfully!');
   } else {
-    await ctx.editMessageText('❌ Failed to clear history. Please try again.');
+    await ctx.reply(`❌ Failed to clear history: ${result.error}`);
   }
-  
-  // Return to main menu after 2 seconds
-  setTimeout(() => ctx.answerCbQuery(), 2000);
 });
-
 
 // Placeholder for other settings
 bot.action('other_settings', (ctx) => {
