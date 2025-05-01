@@ -36,18 +36,16 @@ async function saveHistory(userId, type, message) {
     return { success: false };
   }
 }
-// Update your getHistory function to better handle the response:
 async function getHistory(userId) {
   try {
     const response = await axios.get(`${WALLET_SERVER_URL}/get-history/${userId}`);
-    return response.data?.history?.map(item => ({
-      ...item,
-      // Convert Firestore timestamp to readable format
-      timestamp: item.timestamp || new Date().toISOString()
-    })) || [];
+    return response.data.history || [];
   } catch (error) {
-    console.error('Get history error:', error);
-    return [];
+    console.error('Get history error:', error.response?.data || error.message);
+    return {
+      error: error.response?.data?.error || 'Failed to fetch history',
+      history: []
+    };
   }
 }
 async function deleteHistory(userId) {
