@@ -29,6 +29,77 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Updated /get-tasks endpoint
+app.get('/get-tasks', async (req, res) => {
+  const { userId } = req.query; // Add userId parameter
+
+  try {
+    // Get user's completed task IDs
+    const submissions = await db.collection('taskSubmissions')
+      .where('userId', '==', userId)
+      .where('completed', '==', true)
+      .get();
+
+    const completedTaskIds = submissions.docs.map(doc => doc.data().taskId);
+
+    // Get active tasks not completed by user
+    const tasksSnapshot = await db.collection('tasks')
+      .where('active', '==', true)
+      .where('deleteAt', '>', new Date())
+      .orderBy('deleteAt', 'asc')
+      .get();
+
+    const tasks = [];
+    tasksSnapshot.forEach(doc => {
+      if (!completedTaskIds.includes(doc.id)) {
+        tasks.push({
+          id: doc.id,
+          ...doc.data(),
+          createdAt: doc.data().createdAt?.toDate()?.toISOString()
+        });
+      }
+    });
+
+    return res.json({ tasks });
+  } catch (error) {
+    console.error('Get tasks error:', error);
+    res.status(500).json({ error: 'Failed to fetch tasks' });
+  }
+});
+
+// Updated submitTask endpoint
+app.post('/submit-task', async (req, res) => {
+  const { userId, taskId } = req.body;
+
+  try {
+    // Check for existing submission
+    const existing = await db.collection('taskSubmissions')
+      .where('userId', '==', userId)
+      .where('taskId', '==', taskId)
+      .limit(1)
+      .get();
+
+    if (!existing.empty) {
+      return res.status(400).json({ error: 'Task already submitted' });
+    }
+
+    const submissionRef = await db.collection('taskSubmissions').add({
+      ...req.body,
+      completed: true, // Mark as completed
+      status: 'pending',
+      submittedAt: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    res.json({
+      success: true,
+      submissionId: submissionRef.id
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Submission failed' });
+  }
+});
+
 // Endpoint to get or create wallet
 app.post('/get-wallet', async (req, res) => {
   const { userId } = req.body;
