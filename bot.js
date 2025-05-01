@@ -40,8 +40,7 @@ async function saveHistory(userId, type, message) {
     const response = await axios.post(`${WALLET_SERVER_URL}/save-history`, {
       userId: userId.toString(),
       type,
-      message,
-      unread: true
+      message
     });
     return response.data;
   } catch (error) {
