@@ -210,7 +210,7 @@ app.post('/update-balance', async (req, res) => {
 
     // Save to history except for 'set' actions
     if (action !== 'set') {
-      const historyMessage = `${amount} points have been ${action === 'add' ? 'added to' : 'deducted from'} your balance`;
+      const historyMessage = `${amount} points 🤟 has been ${action === 'add' ? 'added to' : 'deducted from'} your balance ⭐`;
       await db.collection('userHistory').doc(userId).collection('activities').add({
         type: 'balance',
         message: historyMessage,
