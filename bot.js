@@ -299,24 +299,45 @@ bot.action('history', async (ctx) => {
     reply_markup: historyKeyboard.reply_markup
   });
 });
-// Updated task list handler
 bot.action('view_tasks', async (ctx) => {
   const tasks = await getTasks(ctx.from.id.toString());
-  
-  if (tasks.length === 0) {
-    return ctx.editMessageText('🎉 No pending tasks - you\'ve completed them all!');
-  }
 
-  const buttons = tasks.map((task, index) => 
-    [Markup.button.callback(`${index + 1}️⃣ ${task.type}`, `view_task_${task.id}`)]
-  );
-  
-  await ctx.editMessageText('📋 Available Tasks:', {
-    reply_markup: Markup.inlineKeyboard([
-      ...buttons,
-      [Markup.button.callback('🔙 Back', 'back_to_main')]
-    ]).reply_markup
-  });
+  // Create the message content
+  const messageContent = {
+    caption: tasks.length === 0 
+      ? '🎉 No pending tasks - you\'ve completed them all!' 
+      : '📋 Available Tasks:',
+    parse_mode: 'Markdown'
+  };
+
+  // Create buttons only if tasks exist
+  const buttons = tasks.length > 0
+    ? tasks.map((task, index) => 
+        [Markup.button.callback(`${index + 1}️⃣ ${task.type}`, `view_task_${task.id}`)]
+      )
+    : [];
+
+  // Determine if we're editing a photo or text message
+  if (ctx.update.callback_query.message?.photo) {
+    await ctx.editMessageMedia({
+      type: 'photo',
+      media: { source: 'image.jpg' }, // Your tasks image
+      ...messageContent
+    }, {
+      reply_markup: Markup.inlineKeyboard([
+        ...buttons,
+        [Markup.button.callback('🔙 Back', 'back_to_main')]
+      ]).reply_markup
+    });
+  } else {
+    await ctx.editMessageText(messageContent.caption, {
+      parse_mode: 'Markdown',
+      reply_markup: Markup.inlineKeyboard([
+        ...buttons,
+        [Markup.button.callback('🔙 Back', 'back_to_main')]
+      ]).reply_markup
+    });
+  }
 });
 // Single task view handler
 bot.action(/^view_task_(.*)/, async (ctx) => {
