@@ -63,19 +63,12 @@ app.post('/create-task', async (req, res) => {
 });
 
 
-// Updated /get-tasks endpoint
+// Testing version of /get-tasks endpoint (no completed-task filtering)
 app.get('/get-tasks', async (req, res) => {
-  const { userId } = req.query; // Add userId parameter
+  const { userId } = req.query;
 
   try {
-    // Get user's completed task IDs
-    const submissions = await db.collection('taskSubmissions')
-  .where('userId', '==', userId)
-  .where('completed', '==', true)
-  .get();
-
-const completedTaskIds = submissions.docs.map(doc => doc.data().taskId);
-    // Get active tasks not completed by user
+    // Get all active tasks
     const tasksSnapshot = await db.collection('tasks')
       .where('active', '==', true)
       .where('deleteAt', '>', new Date())
@@ -85,10 +78,11 @@ const completedTaskIds = submissions.docs.map(doc => doc.data().taskId);
     const tasks = [];
     tasksSnapshot.forEach(doc => {
       tasks.push({
-  id: doc.id,
-  ...doc.data(),
-  createdAt: doc.data().createdAt?.toDate()?.toISOString()
-});
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate()?.toISOString()
+      });
+    });
 
     return res.json({ tasks });
   } catch (error) {
