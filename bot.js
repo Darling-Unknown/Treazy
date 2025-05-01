@@ -366,39 +366,22 @@ bot.action(/^view_task_(.*)/, async (ctx) => {
     return ctx.answerCbQuery('Wallet not loaded');
   }
 
-  if (ctx.update.callback_query.message?.photo) {
-    // If editing a photo message
-    await ctx.editMessageMedia({
-      type: 'photo',
-      media: { source: 'task.jpg' }, // Replace with your task image
-      caption:
-        `🛠️ *Task Details*\n\n` +
-        `📝 ${task.description}\n\n` +
-        `🆔 Task ID: ${task.id}`,
-      parse_mode: 'Markdown'
-    }, {
-      reply_markup: Markup.inlineKeyboard([
-        [Markup.button.url('🔗 Open Link', task.link)],
-        [Markup.button.callback('✅ Submit Completion', `submit_task_${task.id}`)],
-        [Markup.button.callback('🔙 Back to Tasks', 'view_tasks')]
-      ]).reply_markup
-    });
-  } else {
-    // If editing a text message
-    await ctx.editMessageText(
+  // If editing a photo message
+  await ctx.editMessageMedia({
+    type: 'photo',
+    media: { source: 'task.jpg' }, // Replace with your task image path
+    caption:
       `🛠️ *Task Details*\n\n` +
       `📝 ${task.description}\n\n` +
       `🆔 Task ID: ${task.id}`,
-      {
-        parse_mode: 'Markdown',
-        reply_markup: Markup.inlineKeyboard([
-          [Markup.button.url('🔗 Open Link', task.link)],
-          [Markup.button.callback('✅ Submit Completion', `submit_task_${task.id}`)],
-          [Markup.button.callback('🔙 Back to Tasks', 'view_tasks')]
-        ]).reply_markup
-      }
-    );
-  }
+    parse_mode: 'Markdown'
+  }, {
+    reply_markup: Markup.inlineKeyboard([
+      [Markup.button.url('🔗 Open Link', task.link)],
+      [Markup.button.callback('✅ Submit Completion', `submit_task_${task.id}`)],
+      [Markup.button.callback('🔙 Back to Tasks', 'view_tasks')]
+    ]).reply_markup
+  });
 });
 // Task submission handler
 bot.action(/^submit_task_(.*)/, async (ctx) => {
