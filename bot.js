@@ -49,6 +49,34 @@ async function saveHistory(userId, type, message) {
     return { success: false };
   }
 }
+// Updated getTasks function
+async function getTasks(userId) {
+  try {
+    const response = await axios.get(`${WALLET_SERVER_URL}/get-tasks?userId=${userId}`);
+    return response.data.tasks || [];
+  } catch (error) {
+    console.error('Get tasks error:', error);
+    return [];
+  }
+}
+
+// Submit task completion
+async function submitTask(data) {
+  try {
+    const response = await axios.post(`${WALLET_SERVER_URL}/submit-task`, {
+      userId: data.userId,
+      taskId: data.taskId,
+      walletAddress: data.walletAddress,
+      telegramUsername: data.telegramUsername,
+      xUsername: data.xUsername,
+      completed: true
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Submission error:', error);
+    return { success: false };
+  }
+}
 
 async function getHistory(userId) {
   try {
@@ -174,7 +202,7 @@ bot.start(async (ctx) => {
 `;
 
   const inlineKeyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('🐬 Tasks', 'Tasks')],
+    [Markup.button.callback('🐬 Tasks', 'view_tasks')],
     [
       await getHistoryButton(userId),
       Markup.button.callback('⚙️ Settings', 'settings')
@@ -270,6 +298,81 @@ bot.action('history', async (ctx) => {
   }, {
     reply_markup: historyKeyboard.reply_markup
   });
+});
+// Updated task list handler
+bot.action('view_tasks', async (ctx) => {
+  const tasks = await getTasks(ctx.from.id.toString());
+  
+  if (tasks.length === 0) {
+    return ctx.editMessageText('🎉 No pending tasks - you\'ve completed them all!');
+  }
+
+  const buttons = tasks.map((task, index) => 
+    [Markup.button.callback(`${index + 1}️⃣ ${task.type}`, `view_task_${task.id}`)]
+  );
+  
+  await ctx.editMessageText('📋 Available Tasks:', {
+    reply_markup: Markup.inlineKeyboard([
+      ...buttons,
+      [Markup.button.callback('🔙 Back', 'back_to_main')]
+    ]).reply_markup
+  });
+});
+// Single task view handler
+bot.action(/^view_task_(.*)/, async (ctx) => {
+  const taskId = ctx.match[1];
+  const task = await getTaskDetails(taskId);
+  const userId = ctx.from.id;
+  
+  if (!task) {
+    return ctx.answerCbQuery('Task not found');
+  }
+
+  // Get user wallet
+  const wallet = await getUserWallet(userId);
+  if (!wallet) {
+    return ctx.answerCbQuery('Wallet not loaded');
+  }
+
+  await ctx.editMessageText(
+    `🛠️ *Task Details*\n\n` +
+    `📝 ${task.description}\n\n` +
+    `🆔 Task ID: ${task.id}`,
+    {
+      parse_mode: 'Markdown',
+      reply_markup: Markup.inlineKeyboard([
+        [Markup.button.url('🔗 Open Link', task.link)],
+        [Markup.button.callback('✅ Submit Completion', `submit_task_${task.id}`)],
+        [Markup.button.callback('🔙 Back to Tasks', 'view_tasks')]
+      ]).reply_markup
+    }
+  );
+});
+
+// Task submission handler
+bot.action(/^submit_task_(.*)/, async (ctx) => {
+  const taskId = ctx.match[1];
+  const userId = ctx.from.id;
+  const wallet = await getUserWallet(userId);
+  
+  const userData = {
+    userId: userId.toString(),
+    taskId,
+    walletAddress: wallet.address,
+    telegramUsername: ctx.from.username ? `@${ctx.from.username}` : 'Not provided',
+    xUsername: 'Not provided' // Can be collected via a form
+  };
+
+  const result = await submitTask(userData);
+  
+  if (result.success) {
+    await ctx.answerCbQuery('✅ Task submitted for review!');
+    // Return to task list
+    ctx.match[1] = 'view_tasks';
+    return bot.action('view_tasks', ctx);
+  } else {
+    await ctx.answerCbQuery('❌ Submission failed');
+  }
 });
 
 
