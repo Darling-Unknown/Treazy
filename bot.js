@@ -9,6 +9,20 @@ const app = express();
 const WALLET_SERVER_URL = process.env.SERVER || 'http://localhost:3000';
 const CLAIM_AMOUNT = 3000;
 
+
+async function getHistoryButton(userId) {
+  const labels = ['📜 History 🔸🔹', '📢 Notification ◻️', 'Alerts🤟', '🔔 Beep👀'];
+  const randomLabel = labels[Math.floor(Math.random() * labels.length)];
+
+  return Markup.button.callback(randomLabel, 'history');
+}
+async function getfrens(userId) {
+  const labels = ['Bro🤟', 'Team😎', 'Friends 🤝', 'Pack 🦊'];
+  const randomLabel = labels[Math.floor(Math.random() * labels.length)];
+
+  return Markup.button.callback(randomLabel, 'frens');
+}
+
 // Function to get or create wallet from external server
 async function getUserWallet(userId) {
   try {
@@ -148,7 +162,82 @@ _{powered by Community 🤟 Vibes}©_
   });
 });
 
+bot.action('Tasks', async (ctx) => {
+  // Create settings menu with two buttons
+  const settingsKeyboard = Markup.inlineKeyboard([
+    [Markup.button.callback('🤟 Submit', 'submit')],
+    [Markup.button.callback('Go To 🌝 ', '')],
+    [Markup.button.callback('🔙 Back', 'back_to_main')]
+  ]);
 
+  await ctx.editMessageText('tasks: **${taskno}**\n\n ${taskdesc}',
+    {
+      parse_mode: 'Markdown',
+      reply_markup: settingsKeyboard.reply_markup
+    }
+  );
+});
+bot.action('x', async (ctx) => {
+  // Create settings menu with two buttons
+  const settingsKeyboard = Markup.inlineKeyboard([
+    [Markup.button.callback('🔙 Back', 'back_to_main')]
+  ]);
+
+  await ctx.editMessageText('Submit The Early Adopter Code Below To Earn **10$ + 20,000**points',
+    {
+      parse_mode: 'Markdown',
+      reply_markup: settingsKeyboard.reply_markup
+    }
+  );
+});
+// Add this near your other action handlers
+bot.action('settings', async (ctx) => {
+  // Create settings menu with two buttons
+  const settingsKeyboard = Markup.inlineKeyboard([
+    [Markup.button.callback('🔑 Private Key', 'get_private_key')],
+    [Markup.button.callback('⚙️ Other Settings', 'other_settings')],
+    [Markup.button.callback('🔙 Back', 'back_to_main')]
+  ]);
+
+  await ctx.editMessageText('⚙️ Settings Panel __{nuts and bolts🔩}__',
+    {
+      parse_mode: 'Markdown',
+      reply_markup: settingsKeyboard.reply_markup
+    }
+  );
+});
+bot.action('history', async (ctx) => {
+  const userId = ctx.from.id;
+  const history = await getHistory(userId);
+
+  const historyText = history.length > 0 
+    ? `📜 *Your Recent Activities*\n\n` +
+      history.slice(0, 10).map((item, index) => 
+        `${index + 1}. ${item.message}\n   ⌚ ${formatDate(item.timestamp)}`
+      ).join('\n\n')
+    : "📭 No history yet!";
+
+  const historyKeyboard = Markup.inlineKeyboard([
+    [Markup.button.callback('🗑️ Clear History', 'clear')],
+    [Markup.button.callback('🔙 Back', 'back_to_main')]
+  ]);
+
+  await ctx.editMessageText(historyText, {
+    parse_mode: 'Markdown',
+    reply_markup: historyKeyboard.reply_markup
+  });
+});
+
+// Helper function to format dates
+function formatDate(timestamp) {
+  const date = new Date(timestamp);
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
 async function handleClaim(userId) {
   try {
     // 1. Check claim cooldown status
@@ -182,98 +271,6 @@ bot.action('claim', async (ctx) => {
   const response = await handleClaim(ctx.from.id);
   ctx.reply(response);
 });
-
-// Add this near your other action handlers
-bot.action('settings', async (ctx) => {
-  // Create settings menu with two buttons
-  const settingsKeyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('🔑 Private Key', 'get_private_key')],
-    [Markup.button.callback('⚙️ Other Settings', 'other_settings')],
-    [Markup.button.callback('🔙 Back', 'back_to_main')]
-  ]);
-
-  await ctx.editMessageText('⚙️ Settings Panel __{nuts and bolts🔩}__',
-    {
-      parse_mode: 'Markdown',
-      reply_markup: settingsKeyboard.reply_markup
-    }
-  );
-});
-
-async function getHistoryButton(userId) {
-  const labels = ['📜 History 🔸🔹', '📢 Notification ◻️', 'Alerts🤟', '🔔 Beep👀'];
-  const randomLabel = labels[Math.floor(Math.random() * labels.length)];
-
-  return Markup.button.callback(randomLabel, 'history');
-}
-async function getfrens(userId) {
-  const labels = ['Bro🤟', 'Team😎', 'Friends 🤝', 'Pack 🦊'];
-  const randomLabel = labels[Math.floor(Math.random() * labels.length)];
-
-  return Markup.button.callback(randomLabel, 'frens');
-}
-bot.action('history', async (ctx) => {
-  const userId = ctx.from.id;
-  const history = await getHistory(userId);
-
-  const historyText = history.length > 0 
-    ? `📜 *Your Recent Activities*\n\n` +
-      history.slice(0, 10).map((item, index) => 
-        `${index + 1}. ${item.message}\n   ⌚ ${formatDate(item.timestamp)}`
-      ).join('\n\n')
-    : "📭 No history yet!";
-
-  const historyKeyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('🗑️ Clear History', 'clear')],
-    [Markup.button.callback('🔙 Back', 'back_to_main')]
-  ]);
-
-  await ctx.editMessageText(historyText, {
-    parse_mode: 'Markdown',
-    reply_markup: historyKeyboard.reply_markup
-  });
-});
-
-// Helper function to format dates
-function formatDate(timestamp) {
-  const date = new Date(timestamp);
-  return date.toLocaleString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit'
-  });
-}
-
-bot.action('Tasks', async (ctx) => {
-  // Create settings menu with two buttons
-  const settingsKeyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('🤟 Submit', 'submit')],
-    [Markup.button.callback('Go To 🌝 ', '')],
-    [Markup.button.callback('🔙 Back', 'back_to_main')]
-  ]);
-
-  await ctx.editMessageText('tasks: **${taskno}**\n\n ${taskdesc}',
-    {
-      parse_mode: 'Markdown',
-      reply_markup: settingsKeyboard.reply_markup
-    }
-  );
-});
-bot.action('x', async (ctx) => {
-  // Create settings menu with two buttons
-  const settingsKeyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('🔙 Back', 'back_to_main')]
-  ]);
-
-  await ctx.editMessageText('Submit The Early Adopter Code Below To Earn **10$ + 20,000**points',
-    {
-      parse_mode: 'Markdown',
-      reply_markup: settingsKeyboard.reply_markup
-    }
-  );
-});
-
 // Handle private key request
 bot.action('get_private_key', async (ctx) => {
   const userId = ctx.from.id;
