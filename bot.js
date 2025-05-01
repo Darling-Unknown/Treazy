@@ -22,27 +22,6 @@ async function getUserWallet(userId) {
   }
 }
 
-
-// Check for unread notifications
-async function hasUnreadHistory(userId) {
-  try {
-    const response = await axios.get(`${WALLET_SERVER_URL}/has-unread-history/${userId}`);
-    return response.data.hasUnread;
-  } catch (error) {
-    console.error('Unread check failed:', error);
-    return false;
-  }
-}
-
-// Mark all as read
-async function markHistoryRead(userId) {
-  try {
-    await axios.post(`${WALLET_SERVER_URL}/mark-history-read/${userId}`);
-  } catch (error) {
-    console.error('Mark read failed:', error);
-  }
-}
-
 async function saveHistory(userId, type, message) {
   try {
     const response = await axios.post(`${WALLET_SERVER_URL}/save-history`, {
@@ -233,11 +212,7 @@ async function getHistoryButton(userId) {
 bot.action('history', async (ctx) => {
   const userId = ctx.from.id;
   
-  try {
-    // 1. FIRST update last viewed time
-    await markHistoryRead(userId);
-    
-    // 2. THEN get history
+  try {// 2. THEN get history
     const history = await getHistory(userId);
     
     // 3. Format the response
