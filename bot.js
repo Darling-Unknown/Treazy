@@ -225,8 +225,8 @@ bot.action('settings', async (ctx) => {
 });
 bot.action('history', async (ctx) => {
   const userId = ctx.from.id;
-  const history = await getHistory(userId);
   await updateLastViewed(userId);
+const history = await getHistory(userId);
 
   const historyText = history.length > 0 
     ? `📜 *Your Recent Activities*\n\n` +
