@@ -29,6 +29,25 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+
+// Get Task Details
+app.get('/get-task/:taskId', async (req, res) => {
+  try {
+    const doc = await db.collection('tasks').doc(req.params.taskId).get();
+    if (!doc.exists) {
+      return res.status(404).json({ error: 'Task not found' });
+    }
+    res.json({
+      ...doc.data(),
+      id: doc.id,
+      createdAt: doc.data().createdAt?.toDate()?.toISOString()
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 // Admin - Create Task (Unsecured)
 app.post('/create-task', async (req, res) => {
   const { type, description, link } = req.body;
