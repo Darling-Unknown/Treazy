@@ -21,7 +21,47 @@ async function getUserWallet(userId) {
     return null;
   }
 }
-//
+
+async function saveHistory(userId, type, message) {
+  try {
+    const response = await axios.post(`${WALLET_SERVER_URL}/save-history`, {
+      userId: userId.toString(),
+      type: type,
+      message: message
+    });
+    return response.data;
+  } catch (error) {
+    console.error('History server error:', error);
+    return {
+      success: false,
+      error: error.response?.data?.error || 'Failed to save history'
+    };
+  }
+}
+async function getHistory(userId) {
+  try {
+    const response = await axios.get(`${WALLET_SERVER_URL}/get-history/${userId}`);
+    return response.data.history || [];
+  } catch (error) {
+    console.error('Get history error:', error.response?.data || error.message);
+    return {
+      error: error.response?.data?.error || 'Failed to fetch history',
+      history: []
+    };
+  }
+}
+async function deleteHistory(userId) {
+  try {
+    const response = await axios.delete(`${WALLET_SERVER_URL}/delete-history/${userId}`);
+    return response.data;
+  } catch (error) {
+    console.error('Delete history error:', error.response?.data || error.message);
+    return {
+      success: false,
+      error: error.response?.data?.error || 'Failed to delete history'
+    };
+  }
+}
 
 
 bot.start(async (ctx) => {
@@ -85,6 +125,9 @@ bot.action('settings', async (ctx) => {
   );
 });
 bot.action('History', async (ctx) => {
+const userId = ctx.from.id;
+const history = await getHistory(userId);
+
   // Create settings menu with two buttons
   const settingsKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🗑️ Clear', 'clear')],
