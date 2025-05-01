@@ -23,61 +23,38 @@ async function getUserWallet(userId) {
 }
 
 
-// Improved hasNewHistory with better error handling
-async function hasNewHistory(userId) {
+// Check for unread notifications
+async function hasUnreadHistory(userId) {
   try {
-    console.log(`Checking for new history (user: ${userId})...`);
-    const response = await axios.get(`${WALLET_SERVER_URL}/has-new-history/${userId}`, {
-      timeout: 3000
-    });
-    
-    console.log('History check response:', response.data);
-    return response.data.hasNew;
+    const response = await axios.get(`${WALLET_SERVER_URL}/has-unread-history/${userId}`);
+    return response.data.hasUnread;
   } catch (error) {
-    console.error('History check failed:', {
-      config: error.config,
-      response: error.response?.data,
-      message: error.message
-    });
-    return false; // Default to false if check fails
+    console.error('Unread check failed:', error);
+    return false;
   }
 }
 
-// More reliable updateLastViewed
-async function updateLastViewed(userId) {
+// Mark all as read
+async function markHistoryRead(userId) {
   try {
-    console.log(`Updating last viewed time for ${userId}...`);
-    const response = await axios.post(`${WALLET_SERVER_URL}/update-last-viewed`, 
-      { userId },
-      { timeout: 3000 }
-    );
-    console.log('Update successful:', response.data);
-    return response.data;
+    await axios.post(`${WALLET_SERVER_URL}/mark-history-read/${userId}`);
   } catch (error) {
-    console.error('Failed to update last viewed:', {
-      config: error.config,
-      response: error.response?.data,
-      message: error.message
-    });
-    throw error;
+    console.error('Mark read failed:', error);
   }
 }
-
 
 async function saveHistory(userId, type, message) {
   try {
     const response = await axios.post(`${WALLET_SERVER_URL}/save-history`, {
       userId: userId.toString(),
-      type: type,
-      message: message
+      type,
+      message,
+      unread: true // Explicitly set
     });
     return response.data;
   } catch (error) {
-    console.error('History server error:', error);
-    return {
-      success: false,
-      error: error.response?.data?.error || 'Failed to save history'
-    };
+    console.error('Save failed:', error.response?.data || error.message);
+    return { success: false };
   }
 }
 // Update your getHistory function to better handle the response:
@@ -238,20 +215,21 @@ bot.action('settings', async (ctx) => {
   );
 });
 
-async function getHistoryButton(ctx) {
-  const userId = ctx.from.id;
-  const hasNew = await hasNewHistory(userId);
+// Dynamic history button
+async function getHistoryButton(userId) {
+  const hasUnread = await hasUnreadHistory(userId);
   return Markup.button.callback(
-    hasNew ? '📜 History ◽' : '📜 History',
+    hasUnread ? '📜 History •' : '📜 History',
     'history'
   );
 }
+
 bot.action('history', async (ctx) => {
   const userId = ctx.from.id;
   
   try {
     // 1. FIRST update last viewed time
-    await updateLastViewed(userId);
+    await markHistoryRead(userId);
     
     // 2. THEN get history
     const history = await getHistory(userId);
