@@ -23,6 +23,7 @@ async function getUserWallet(userId) {
 }
 //
 
+
 bot.start(async (ctx) => {
   const userId = ctx.from.id;
   const wallet = await getUserWallet(userId);
@@ -77,6 +78,48 @@ bot.action('settings', async (ctx) => {
   ]);
 
   await ctx.editMessageText('⚙️ Settings Panel __{nuts and bolts🔩}__',
+    {
+      parse_mode: 'Markdown',
+      reply_markup: settingsKeyboard.reply_markup
+    }
+  );
+});
+bot.action('History', async (ctx) => {
+  // Create settings menu with two buttons
+  const settingsKeyboard = Markup.inlineKeyboard([
+    [Markup.button.callback('🗑️ Clear', 'clear')],
+    [Markup.button.callback('🔙 Back', 'back_to_main')]
+  ]);
+
+  await ctx.editMessageText('Latest Activities\n\n ${history}',
+    {
+      parse_mode: 'Markdown',
+      reply_markup: settingsKeyboard.reply_markup
+    }
+  );
+});
+bot.action('Tasks', async (ctx) => {
+  // Create settings menu with two buttons
+  const settingsKeyboard = Markup.inlineKeyboard([
+    [Markup.button.callback('🤟 Submit', 'submit')],
+    [Markup.button.callback('Go To 🌝 ', '')],
+    [Markup.button.callback('🔙 Back', 'back_to_main')]
+  ]);
+
+  await ctx.editMessageText('tasks: **${taskno}**\n\n ${taskdesc}',
+    {
+      parse_mode: 'Markdown',
+      reply_markup: settingsKeyboard.reply_markup
+    }
+  );
+});
+bot.action('x', async (ctx) => {
+  // Create settings menu with two buttons
+  const settingsKeyboard = Markup.inlineKeyboard([
+    [Markup.button.callback('🔙 Back', 'back_to_main')]
+  ]);
+
+  await ctx.editMessageText('Submit The Early Adopter Code Below To Earn **10$ + 20,000**points',
     {
       parse_mode: 'Markdown',
       reply_markup: settingsKeyboard.reply_markup
