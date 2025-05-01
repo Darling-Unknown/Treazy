@@ -12,15 +12,11 @@ const CLAIM_AMOUNT = 3000;
 
 // ================= UTILITY FUNCTIONS =================
 async function getHistoryButton(userId) {
-  const labels = ['📜 History 🔸🔹', '📢 Notification ◻️', 'Alerts🤟', '🔔 Beep👀'];
-  const randomLabel = labels[Math.floor(Math.random() * labels.length)];
-  return Markup.button.callback(randomLabel, 'history');
+  return Markup.button.callback('📜 History', 'history');
 }
 
 async function getfrens(userId) {
-  const labels = ['Bro🤟', 'Team😎', 'Friends 🤝', 'Pack 🦊'];
-  const randomLabel = labels[Math.floor(Math.random() * labels.length)];
-  return Markup.button.callback(randomLabel, 'frens');
+  return Markup.button.callback('Friends 🤝', 'frens');
 }
 
 async function getUserWallet(userId) {
@@ -40,7 +36,8 @@ async function saveHistory(userId, type, message) {
     const response = await axios.post(`${WALLET_SERVER_URL}/save-history`, {
       userId: userId.toString(),
       type,
-      message
+      message,
+      unread: true
     });
     return response.data;
   } catch (error) {
@@ -180,7 +177,7 @@ bot.start(async (ctx) => {
     ],
     [
       await getfrens(userId),
-      Markup.button.callback('⛏️claim', 'claim'),
+      Markup.button.callback('⛏️ Claim', 'claim'),
       Markup.button.callback('@early adopters', 'x')
     ]
   ]);
@@ -189,17 +186,6 @@ bot.start(async (ctx) => {
     caption: welcomeMessage,
     parse_mode: 'Markdown',
     reply_markup: inlineKeyboard.reply_markup
-  });
-});
-
-// Add the missing frens handler
-bot.action('frens', async (ctx) => {
-  const frensKeyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('🔙 Back', 'back_to_main')]
-  ]);
-  
-  await ctx.editMessageText('Frens section coming soon!', {
-    reply_markup: frensKeyboard.reply_markup
   });
 });
 
@@ -353,14 +339,17 @@ bot.action('back_to_main', async (ctx) => {
     ],
     [
       await getfrens(userId),
-      Markup.button.callback('⛏️claim', 'claim'),
+      Markup.button.callback('⛏️ Claim', 'claim'),
       Markup.button.callback('@early adopters', 'x')
     ]
   ]);
 
-  await ctx.replyWithPhoto({ source: 'image.jpg' }, {
+  await ctx.editMessageMedia({
+    type: 'photo',
+    media: { source: 'image.jpg' },
     caption: welcomeMessage,
-    parse_mode: 'Markdown',
+    parse_mode: 'Markdown'
+  }, {
     reply_markup: inlineKeyboard.reply_markup
   });
 });
@@ -376,7 +365,9 @@ app.get('/', (req, res) => {
   });
 });
 
-app.post('/webhook', bot.webhookCallback('/webhook'));
+app.post('/webhook', (req, res) => {
+  bot.handleUpdate(req.body, res);
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
