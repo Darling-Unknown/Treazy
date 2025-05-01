@@ -32,20 +32,19 @@ bot.start(async (ctx) => {
   }
 
   const welcomeMessage = `
-🎉 **🚀 *TREZZY AIRDROP IS LIVE!* 🚀** 🎉  
+🎉 ***TREZZY AIRDROP IS LIVE!***
 
-🔥*Earn free Treezy and Usdt*🔥  
+🔥*Earn free **Treez + Usdt***
 
 ⚡ *User:* \`${userId}\`  
 📍 *Wallet Address:* \`${wallet.address}\`  
-💰 *Bnb Balance*: *${wallet.balance} BNB*
-💲 *Usdt Balance*: xxxxx
+💰 *Balance*: *${wallet.balance} BNB* | **Usdt: xcxxx **
 🤟 *Treazy Points*: xxxxxxx
  
 ✨ **Make Sure To:**  
 - ✅ **Join our Telegram & Twitter** (xxxxxx)  
-- ✖️ **Follow our X page** (Xxx)
-- 🐥 **Complete Tasks to Earn Treazy and Usdt**
+- 🐥 **Follow our X page** (Xxx)
+- 💲**Complete Tasks to Earn Treazy and Usdt**
 - 🎁 **Bonus Entries:** Refer friends for extra rewards!
 
 __{powered by Community 🤟 Vibes}©__
