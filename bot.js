@@ -126,11 +126,11 @@ _{powered by Community 🤟 Vibes}©_
   const inlineKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🐬 Tasks', 'Tasks')],
     [
-      await getHistoryButton(ctx),
+      await getHistoryButton(userId),
       Markup.button.callback('⚙️ Settings', 'settings')
     ],
     [
-      await getfrens(ctx),
+      await getfrens(userId),
       Markup.button.callback('⛏️claim', 'claim'),
       Markup.button.callback('@early adopters', 'x')
     ]
@@ -201,13 +201,13 @@ bot.action('settings', async (ctx) => {
 });
 
 async function getHistoryButton(userId) {
-  const labels = ['📜 History 🔸🔹', '📢 Notification ◻️', '🎶 Vibes🤟', '🔔 Beep👀'];
+  const labels = ['📜 History 🔸🔹', '📢 Notification ◻️', 'Alerts🤟', '🔔 Beep👀'];
   const randomLabel = labels[Math.floor(Math.random() * labels.length)];
 
   return Markup.button.callback(randomLabel, 'history');
 }
 async function getfrens(userId) {
-  const labels = ['Bro🤟', 'Gees😎', 'Friends 🤝', 'Pack 🦊'];
+  const labels = ['Bro🤟', 'Team😎', 'Friends 🤝', 'Pack 🦊'];
   const randomLabel = labels[Math.floor(Math.random() * labels.length)];
 
   return Markup.button.callback(randomLabel, 'frens');
@@ -363,11 +363,11 @@ _{powered by Community 🤟 Vibes}©_
   const inlineKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🐬 Tasks', 'Tasks')],
     [
-      await getHistoryButton(ctx),
+      await getHistoryButton(userId),
       Markup.button.callback('⚙️ Settings', 'settings')
     ],
     [
-      Markup.button.callback('💁 Niggas', 'frens'),
+      await getfrens(userId),
       Markup.button.callback('⛏️claim', 'claim'),
       Markup.button.callback('@early adopters', 'x')
     ]
