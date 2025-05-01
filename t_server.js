@@ -89,8 +89,6 @@ const completedTaskIds = submissions.docs.map(doc => doc.data().taskId);
   ...doc.data(),
   createdAt: doc.data().createdAt?.toDate()?.toISOString()
 });
-      }
-    });
 
     return res.json({ tasks });
   } catch (error) {
