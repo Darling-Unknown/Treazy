@@ -388,7 +388,7 @@ bot.action(/^submit_task_(.*)/, async (ctx) => {
   const taskId = ctx.match[1];
   const userId = ctx.from.id;
   const wallet = await getUserWallet(userId);
-  
+
   const userData = {
     userId: userId.toString(),
     taskId,
@@ -398,9 +398,14 @@ bot.action(/^submit_task_(.*)/, async (ctx) => {
   };
 
   const result = await submitTask(userData);
-  
+
   if (result.success) {
     await ctx.answerCbQuery('✅ Task submitted for review!');
+
+    // Save task history
+    const historyMessage = `You submitted task ${taskId} 💪 (under review)`;
+    await saveHistory(userId, 'task_submission', historyMessage);
+
     // Return to task list
     ctx.match[1] = 'view_tasks';
     return bot.action('view_tasks', ctx);
@@ -408,8 +413,6 @@ bot.action(/^submit_task_(.*)/, async (ctx) => {
     await ctx.answerCbQuery('❌ Submission failed');
   }
 });
-
-
 bot.action('claim', async (ctx) => {
   const response = await handleClaim(ctx.from.id);
   ctx.reply(response);
