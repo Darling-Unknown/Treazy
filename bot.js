@@ -62,11 +62,43 @@ async function deleteHistory(userId) {
     };
   }
 }
+// Update balance function
+async function updateBalance(userId, action, amount, reason = '') {
+  try {
+    const response = await axios.post(`${WALLET_SERVER_URL}/update-balance`, {
+      userId: userId.toString(),
+      action,
+      amount: Number(amount),
+      reason
+    });
+    return response.data;
+  } catch (error) {
+    console.error('Update balance error:', error.response?.data || error.message);
+    return {
+      success: false,
+      error: error.response?.data?.error || 'Failed to update balance'
+    };
+  }
+}
 
+// Get balance function
+async function getBalance(userId) {
+  try {
+    const response = await axios.get(`${WALLET_SERVER_URL}/get-balance/${userId}`);
+    return response.data.balance || 0;
+  } catch (error) {
+    console.error('Get balance error:', error.response?.data || error.message);
+    return {
+      error: error.response?.data?.error || 'Failed to fetch balance',
+      balance: 0
+    };
+  }
+}
 
 bot.start(async (ctx) => {
   const userId = ctx.from.id;
   const wallet = await getUserWallet(userId);
+  const points = await getBalance(userId);
 
   if (!wallet) {
     return ctx.reply('❌ Failed to load wallet. Please try again later.');
@@ -80,7 +112,7 @@ bot.start(async (ctx) => {
 ⚡ *User:* \`${userId}\`  
 📍 *Wallet Address:* \`${wallet.address}\`  
 💰 *Balance*: *${wallet.balance} BNB* | **Usdt: xcxxx **
-🤟 *Treazy Points*: xxxxxxx
+🤟 *Treazy Points* : † ${points} 
  
 ✨ **Make Sure To:**  
 - ✅ **Join our Telegram & Twitter** (xxxxxx)  
