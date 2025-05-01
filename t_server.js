@@ -166,6 +166,91 @@ app.delete('/delete-history/:userId', async (req, res) => {
   }
 });
 
+// Balance management endpoint
+app.post('/update-balance', async (req, res) => {
+  const { userId, action, amount, reason } = req.body;
+
+  if (!userId || !action || amount === undefined) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  if (isNaN(amount) || amount <= 0) {
+    return res.status(400).json({ error: 'Amount must be a positive number' });
+  }
+
+  const validActions = ['add', 'deduct', 'set'];
+  if (!validActions.includes(action)) {
+    return res.status(400).json({ error: 'Invalid action type' });
+  }
+
+  try {
+    const userRef = db.collection('userBalances').doc(userId);
+    const doc = await userRef.get();
+    
+    let currentBalance = 0;
+    if (doc.exists) {
+      currentBalance = doc.data().balance || 0;
+    }
+
+    let newBalance;
+    switch (action) {
+      case 'add':
+        newBalance = currentBalance + amount;
+        break;
+      case 'deduct':
+        newBalance = currentBalance - amount;
+        if (newBalance < 0) newBalance = 0;
+        break;
+      case 'set':
+        newBalance = amount;
+        break;
+    }
+
+    await userRef.set({ balance: newBalance }, { merge: true });
+
+    // Save to history except for 'set' actions
+    if (action !== 'set') {
+      const historyMessage = `${amount} points have been ${action === 'add' ? 'added to' : 'deducted from'} your balance`;
+      await db.collection('userHistory').doc(userId).collection('activities').add({
+        type: 'balance',
+        message: historyMessage,
+        amount: amount,
+        action: action,
+        reason: reason || '',
+        timestamp: admin.firestore.FieldValue.serverTimestamp()
+      });
+    }
+
+    return res.json({
+      success: true,
+      newBalance,
+      message: action === 'set' ? 'Balance set successfully' : `Balance ${action}ed successfully`
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error while updating balance' });
+  }
+});
+
+// Get balance endpoint
+app.get('/get-balance/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const doc = await db.collection('userBalances').doc(userId).get();
+    
+    if (!doc.exists) {
+      return res.json({ balance: 0 });
+    }
+
+    return res.json({ balance: doc.data().balance || 0 });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server error while fetching balance' });
+  }
+});
+
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
