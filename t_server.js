@@ -283,6 +283,40 @@ app.post('/check-claim', async (req, res) => {
     res.status(500).json({ error: 'Server error during claim check' });
   }
 });
+// Add to your server endpoints
+app.post('/update-last-viewed', async (req, res) => {
+  try {
+    await db.collection('userViews')
+      .doc(req.body.userId)
+      .set({
+        lastViewedHistory: admin.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+app.get('/has-new-history/:userId', async (req, res) => {
+  try {
+    const [viewDoc, historyDoc] = await Promise.all([
+      db.collection('userViews').doc(req.params.userId).get(),
+      db.collection('userHistory').doc(req.params.userId)
+        .collection('activities')
+        .orderBy('timestamp', 'desc')
+        .limit(1)
+        .get()
+    ]);
+
+    const hasNew = !viewDoc.exists || 
+                  (historyDoc.size > 0 && 
+                   historyDoc.docs[0].data().timestamp > viewDoc.data().lastViewedHistory);
+
+    res.json({ hasNew });
+  } catch (error) {
+    res.status(500).json({ error: 'Server error' });
+  }
+});
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
