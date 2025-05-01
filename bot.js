@@ -22,14 +22,7 @@ async function getUserWallet(userId) {
   }
 }
 
-async function getHistoryButton(ctx) {
-  const userId = ctx.from.id;
-  const hasNew = await hasNewHistory(userId);
-  return Markup.button.callback(
-    hasNew ? '📜 History 🙈' : '📜 History',
-    'history'
-  );
-}
+
 async function hasNewHistory(userId) {
   try {
     const response = await axios.get(`${WALLET_SERVER_URL}/has-new-history/${userId}`);
@@ -223,6 +216,15 @@ bot.action('settings', async (ctx) => {
     }
   );
 });
+
+async function getHistoryButton(ctx) {
+  const userId = ctx.from.id;
+  const hasNew = await hasNewHistory(userId);
+  return Markup.button.callback(
+    hasNew ? '📜 History ◽' : '📜 History',
+    'history'
+  );
+}
 bot.action('history', async (ctx) => {
   const userId = ctx.from.id;
   await updateLastViewed(userId);
