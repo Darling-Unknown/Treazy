@@ -73,34 +73,39 @@ app.post('/get-wallet', async (req, res) => {
     res.status(500).json({ error: 'Server error' });
   }
 });
-// Save history (type + message only)
+// Save history with unread tracking
 app.post('/save-history', async (req, res) => {
-  const { userId, type, message } = req.body;
+  const { userId, type, message, unread } = req.body; // Added unread
 
   if (!userId || !type || !message) {
     return res.status(400).json({ error: 'User ID, type and message are required' });
   }
 
   try {
-    const historyRef = db.collection('userHistory').doc(userId).collection('activities').doc();
-    
+    const historyRef = db.collection('userHistory')
+      .doc(userId)
+      .collection('activities')
+      .doc(); // Auto-generated ID
+
     await historyRef.set({
       type,
       message,
+      unread: unread !== false, // Defaults to true unless explicitly false
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
     return res.json({ 
       success: true, 
-      message: 'History saved',
       historyId: historyRef.id
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Server error while saving history' });
+    console.error('Save history error:', error);
+    res.status(500).json({ 
+      error: 'Failed to save history',
+      details: error.message 
+    });
   }
 });
-
 // Get latest 5 history items
 app.get('/get-history/:userId', async (req, res) => {
   const { userId } = req.params;
