@@ -90,7 +90,6 @@ app.post('/save-history', async (req, res) => {
     await historyRef.set({
       type,
       message,
-      unread: unread !== false, // Defaults to true unless explicitly false
       timestamp: admin.firestore.FieldValue.serverTimestamp()
     });
 
