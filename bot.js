@@ -128,7 +128,7 @@ _{powered by Community 🤟 Vibes}©_
       Markup.button.callback('⚙️ Settings', 'settings')
     ],
     [
-      Markup.button.callback('💁 Niggas', 'frens'),
+      await getfrens(ctx),
       Markup.button.callback('⛏️claim', 'claim'),
       Markup.button.callback('@early adopters', 'x')
     ]
@@ -203,6 +203,12 @@ async function getHistoryButton(userId) {
   const randomLabel = labels[Math.floor(Math.random() * labels.length)];
 
   return Markup.button.callback(randomLabel, 'history');
+}
+async function getfrens(userId) {
+  const labels = ['Bro🤟', 'Gees😎', 'Friends 🤝', 'Pack 🦊'];
+  const randomLabel = labels[Math.floor(Math.random() * labels.length)];
+
+  return Markup.button.callback(randomLabel, 'frens');
 }
 bot.action('history', async (ctx) => {
   const userId = ctx.from.id;
