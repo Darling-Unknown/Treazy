@@ -310,10 +310,11 @@ bot.action('history', async (ctx) => {
     reply_markup: historyKeyboard.reply_markup
   });
 });
-bot.action('view_tasks', async (ctx) => {
+bot.action('view_tasks', showTaskList);
+
+  async function showTaskList(ctx) {
   const tasks = await getTasks(ctx.from.id.toString());
 
-  // Create the message content
   const messageContent = {
     caption: tasks.length === 0 
       ? '🎉 No pending tasks - you\'ve completed them all!' 
@@ -321,18 +322,16 @@ bot.action('view_tasks', async (ctx) => {
     parse_mode: 'Markdown'
   };
 
-  // Create buttons only if tasks exist
   const buttons = tasks.length > 0
     ? tasks.map((task, index) => 
         [Markup.button.callback(`${index + 1}️⃣ ${task.type}`, `view_task_${task.id}`)]
       )
     : [];
 
-  // Determine if we're editing a photo or text message
   if (ctx.update.callback_query.message?.photo) {
     await ctx.editMessageMedia({
       type: 'photo',
-      media: { source: 'image.jpg' }, // Your tasks image
+      media: { source: 'image.jpg' },
       ...messageContent
     }, {
       reply_markup: Markup.inlineKeyboard([
@@ -349,7 +348,7 @@ bot.action('view_tasks', async (ctx) => {
       ]).reply_markup
     });
   }
-});
+}
 // Single task view handler
 bot.action(/^view_task_(.*)/, async (ctx) => {
   const taskId = ctx.match[1];
@@ -384,6 +383,7 @@ bot.action(/^view_task_(.*)/, async (ctx) => {
   });
 });
 // Task submission handler
+// Task submission handler
 bot.action(/^submit_task_(.*)/, async (ctx) => {
   const taskId = ctx.match[1];
   const userId = ctx.from.id;
@@ -394,21 +394,18 @@ bot.action(/^submit_task_(.*)/, async (ctx) => {
     taskId,
     walletAddress: wallet.address,
     telegramUsername: ctx.from.username ? `@${ctx.from.username}` : 'Not provided',
-    xUsername: 'Not provided' // Can be collected via a form
+    xUsername: 'Not provided'
   };
 
   const result = await submitTask(userData);
 
   if (result.success) {
     await ctx.answerCbQuery('✅ Task submitted for review!');
-
-    // Save task history
     const historyMessage = `You submitted task ${taskId} 💪 (under review)`;
     await saveHistory(userId, 'task_submission', historyMessage);
 
-    // Return to task list
-    ctx.match[1] = 'view_tasks';
-    return bot.action('view_tasks', ctx);
+    // Call the shared function directly
+    return await showTaskList(ctx);
   } else {
     await ctx.answerCbQuery('❌ Submission failed');
   }
