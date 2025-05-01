@@ -143,10 +143,11 @@ bot.start(async (ctx) => {
 
 _{powered by Community 🤟 Vibes}©_
 `;
+
   const inlineKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🐬 Tasks', 'Tasks')],
     [
-      await getHistoryButton(ctx), // Dynamic button
+      await getHistoryButton(ctx),
       Markup.button.callback('⚙️ Settings', 'settings')
     ],
     [
@@ -156,10 +157,15 @@ _{powered by Community 🤟 Vibes}©_
     ]
   ]);
 
-  await ctx.reply(welcomeMessage, {
+  // Send image with caption
+  await ctx.replyWithPhoto({
+    source: 'image.jpg' // Local file path
+    // OR use URL:
+    // url: 'https://example.com/image.jpg'
+  }, {
+    caption: welcomeMessage,
     parse_mode: 'Markdown',
-    reply_markup: inlineKeyboard.reply_markup,
-    disable_web_page_preview: true
+    reply_markup: inlineKeyboard.reply_markup
   });
 });
 
@@ -355,12 +361,11 @@ bot.action('other_settings', (ctx) => {
 bot.action('back_to_main', async (ctx) => {
   const userId = ctx.from.id;
   const wallet = await getUserWallet(userId);
-
   if (!wallet) {
     return ctx.reply('❌ Failed to load wallet. Please try again later.');
   }
 
- const welcomeMessage = `
+  const welcomeMessage = `
 🎉 ***TREZZY AIRDROP IS LIVE!***
 
 🔥**Earn free _Treez + Usdt_**
@@ -368,7 +373,7 @@ bot.action('back_to_main', async (ctx) => {
 ⚡ *User:* \`${userId}\`  
 📍 *Wallet Address:* \`${wallet.address}\`  
 💰 *Balance*: *${wallet.balance} BNB* | **Usdt: xcxxx **
-🤟 *Treazy Points*: xxxxxxx
+🤟 *Treazy Points* : † ${points} 
  
 ✨ **Make Sure To:**  
 - ✅ **Join our Telegram & Twitter** (xxxxxx)  
@@ -382,7 +387,7 @@ _{powered by Community 🤟 Vibes}©_
   const inlineKeyboard = Markup.inlineKeyboard([
     [Markup.button.callback('🐬 Tasks', 'Tasks')],
     [
-      await getHistoryButton(ctx), // Dynamic button
+      await getHistoryButton(ctx),
       Markup.button.callback('⚙️ Settings', 'settings')
     ],
     [
@@ -392,10 +397,15 @@ _{powered by Community 🤟 Vibes}©_
     ]
   ]);
 
-  await ctx.editMessageText(welcomeMessage, {
+  // Send image with caption
+  await ctx.replyWithPhoto({
+    source: 'image.jpg' // Local file path
+    // OR use URL:
+    // url: 'https://example.com/image.jpg'
+  }, {
+    caption: welcomeMessage,
     parse_mode: 'Markdown',
-    reply_markup: inlineKeyboard.reply_markup,
-    disable_web_page_preview: true
+    reply_markup: inlineKeyboard.reply_markup
   });
 });
 // ... [keep all your existing button action handlers] ...
