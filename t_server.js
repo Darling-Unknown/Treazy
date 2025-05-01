@@ -288,46 +288,7 @@ app.post('/check-claim', async (req, res) => {
     res.status(500).json({ error: 'Server error during claim check' });
   }
 });
-// Mark all history as read
-app.post('/mark-history-read/:userId', async (req, res) => {
-  try {
-    const userId = req.params.userId;
-    const batch = db.batch();
-    
-    const unreadItems = await db.collection('userHistory')
-      .doc(userId)
-      .collection('activities')
-      .where('unread', '==', true)
-      .get();
 
-    unreadItems.forEach(doc => {
-      batch.update(doc.ref, { unread: false });
-    });
-
-    await batch.commit();
-    res.json({ success: true, markedRead: unreadItems.size });
-  } catch (error) {
-    console.error('Mark read error:', error);
-    res.status(500).json({ error: 'Failed to mark as read' });
-  }
-});
-
-// Check for unread notifications
-app.get('/has-unread-history/:userId', async (req, res) => {
-  try {
-    const snapshot = await db.collection('userHistory')
-      .doc(req.params.userId)
-      .collection('activities')
-      .where('unread', '==', true)
-      .limit(1)
-      .get();
-
-    res.json({ hasUnread: !snread.empty });
-  } catch (error) {
-    console.error('Unread check error:', error);
-    res.status(500).json({ error: 'Failed to check unread' });
-  }
-});
 // Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
