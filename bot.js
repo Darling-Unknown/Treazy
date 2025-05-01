@@ -39,16 +39,18 @@ async function saveHistory(userId, type, message) {
     };
   }
 }
+// Update your getHistory function to better handle the response:
 async function getHistory(userId) {
   try {
     const response = await axios.get(`${WALLET_SERVER_URL}/get-history/${userId}`);
-    return response.data.history || [];
+    return response.data?.history?.map(item => ({
+      ...item,
+      // Convert Firestore timestamp to readable format
+      timestamp: item.timestamp || new Date().toISOString()
+    })) || [];
   } catch (error) {
-    console.error('Get history error:', error.response?.data || error.message);
-    return {
-      error: error.response?.data?.error || 'Failed to fetch history',
-      history: []
-    };
+    console.error('Get history error:', error);
+    return [];
   }
 }
 async function deleteHistory(userId) {
@@ -195,22 +197,37 @@ bot.action('settings', async (ctx) => {
   );
 });
 bot.action('history', async (ctx) => {
-const userId = ctx.from.id;
-const history = await getHistory(userId);
+  const userId = ctx.from.id;
+  const history = await getHistory(userId);
 
-  // Create settings menu with two buttons
-  const settingsKeyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('🗑️ Clear', 'clear')],
+  const historyText = history.length > 0 
+    ? `📜 *Your Recent Activities*\n\n` +
+      history.slice(0, 10).map((item, index) => 
+        `${index + 1}. ${item.message}\n   ⌚ ${formatDate(item.timestamp)}`
+      ).join('\n\n')
+    : "📭 No history yet!";
+
+  const historyKeyboard = Markup.inlineKeyboard([
+    [Markup.button.callback('🗑️ Clear History', 'clear_history')],
     [Markup.button.callback('🔙 Back', 'back_to_main')]
   ]);
 
-  await ctx.editMessageText('Latest Activities\n\n ${history}',
-    {
-      parse_mode: 'Markdown',
-      reply_markup: settingsKeyboard.reply_markup
-    }
-  );
+  await ctx.editMessageText(historyText, {
+    parse_mode: 'Markdown',
+    reply_markup: historyKeyboard.reply_markup
+  });
 });
+
+// Helper function to format dates
+function formatDate(timestamp) {
+  const date = new Date(timestamp);
+  return date.toLocaleString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
 bot.action('Tasks', async (ctx) => {
   // Create settings menu with two buttons
   const settingsKeyboard = Markup.inlineKeyboard([
@@ -278,6 +295,21 @@ bot.action('get_private_key', async (ctx) => {
     await ctx.reply('❌ Failed to retrieve private key. Please try again later.');
   }
 });
+// Add this handler:
+bot.action('clear', async (ctx) => {
+  const userId = ctx.from.id;
+  const result = await deleteHistory(userId);
+  
+  if (result.success) {
+    await ctx.editMessageText('✅ History cleared successfully!');
+  } else {
+    await ctx.editMessageText('❌ Failed to clear history. Please try again.');
+  }
+  
+  // Return to main menu after 2 seconds
+  setTimeout(() => ctx.answerCbQuery(), 2000);
+});
+
 
 // Placeholder for other settings
 bot.action('other_settings', (ctx) => {
