@@ -29,6 +29,65 @@ const app = express();
 app.use(cors());
 app.use(express.json());
 
+// Admin - Create Task (Unsecured)
+app.post('/create-task', async (req, res) => {
+  const { type, description, link } = req.body;
+
+  if (!type || !description || !link) {
+    return res.status(400).json({ error: 'Missing required fields' });
+  }
+
+  try {
+    // Auto-delete after 24 hours
+    const deleteAt = new Date();
+    deleteAt.setHours(deleteAt.getHours() + 24);
+
+    const taskRef = await db.collection('tasks').add({
+      type,
+      description,
+      link,
+      createdAt: admin.firestore.FieldValue.serverTimestamp(),
+      deleteAt,
+      active: true
+    });
+
+    return res.json({
+      success: true,
+      taskId: taskRef.id,
+      message: 'Task created successfully'
+    });
+  } catch (error) {
+    console.error('Task creation error:', error);
+    res.status(500).json({ error: 'Failed to create task' });
+  }
+});
+
+// User - View Active Tasks
+app.get('/get-tasks', async (req, res) => {
+  try {
+    const snapshot = await db.collection('tasks')
+      .where('active', '==', true)
+      .where('deleteAt', '>', new Date())
+      .orderBy('deleteAt', 'asc')
+      .get();
+
+    const tasks = [];
+    snapshot.forEach(doc => {
+      tasks.push({
+        id: doc.id,
+        ...doc.data(),
+        createdAt: doc.data().createdAt?.toDate()?.toISOString(),
+        deleteAt: doc.data().deleteAt?.toDate()?.toISOString()
+      });
+    });
+
+    return res.json({ tasks });
+  } catch (error) {
+    console.error('Get tasks error:', error);
+    res.status(500).json({ error: 'Failed to fetch tasks' });
+  }
+});
+
 // Updated /get-tasks endpoint
 app.get('/get-tasks', async (req, res) => {
   const { userId } = req.query; // Add userId parameter
