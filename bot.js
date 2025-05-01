@@ -23,24 +23,45 @@ async function getUserWallet(userId) {
 }
 
 
+// Improved hasNewHistory with better error handling
 async function hasNewHistory(userId) {
   try {
-    const response = await axios.get(`${WALLET_SERVER_URL}/has-new-history/${userId}`);
+    console.log(`Checking for new history (user: ${userId})...`);
+    const response = await axios.get(`${WALLET_SERVER_URL}/has-new-history/${userId}`, {
+      timeout: 3000
+    });
+    
+    console.log('History check response:', response.data);
     return response.data.hasNew;
   } catch (error) {
-    console.error('New history check failed:', error);
-    return false;
+    console.error('History check failed:', {
+      config: error.config,
+      response: error.response?.data,
+      message: error.message
+    });
+    return false; // Default to false if check fails
   }
 }
 
+// More reliable updateLastViewed
 async function updateLastViewed(userId) {
   try {
-    await axios.post(`${WALLET_SERVER_URL}/update-last-viewed`, { userId });
+    console.log(`Updating last viewed time for ${userId}...`);
+    const response = await axios.post(`${WALLET_SERVER_URL}/update-last-viewed`, 
+      { userId },
+      { timeout: 3000 }
+    );
+    console.log('Update successful:', response.data);
+    return response.data;
   } catch (error) {
-    console.error('Failed to update last viewed:', error);
+    console.error('Failed to update last viewed:', {
+      config: error.config,
+      response: error.response?.data,
+      message: error.message
+    });
+    throw error;
   }
 }
-
 
 
 async function saveHistory(userId, type, message) {
@@ -227,27 +248,33 @@ async function getHistoryButton(ctx) {
 }
 bot.action('history', async (ctx) => {
   const userId = ctx.from.id;
-  await updateLastViewed(userId);
-const history = await getHistory(userId);
-
-  const historyText = history.length > 0 
-    ? `📜 *Your Recent Activities*\n\n` +
-      history.slice(0, 10).map((item, index) => 
-        `${index + 1}. ${item.message}\n   ⌚ ${formatDate(item.timestamp)}`
-      ).join('\n\n')
-    : "📭 No history yet!";
-
-  const historyKeyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('🗑️ Clear History', 'clear_history')],
-    [Markup.button.callback('🔙 Back', 'back_to_main')]
-  ]);
-
-  await ctx.editMessageText(historyText, {
-    parse_mode: 'Markdown',
-    reply_markup: historyKeyboard.reply_markup
-  });
+  
+  try {
+    // 1. FIRST update last viewed time
+    await updateLastViewed(userId);
+    
+    // 2. THEN get history
+    const history = await getHistory(userId);
+    
+    // 3. Format the response
+    const historyText = history.length > 0
+      ? `📜 Your History:\n\n${history.map((item, i) => 
+          `${i+1}. ${item.message}\n   ⌚ ${new Date(item.timestamp).toLocaleString()}`
+        ).join('\n\n')}`
+      : "📭 No history yet!";
+    
+    await ctx.editMessageText(historyText, {
+      reply_markup: Markup.inlineKeyboard([
+        [Markup.button.callback('🗑️ Clear History', 'clear_history')],
+        [Markup.button.callback('🔙 Back', 'back_to_main')]
+      ]).reply_markup
+    });
+    
+  } catch (error) {
+    console.error('History command failed:', error);
+    await ctx.reply('❌ Failed to load history. Please try again.');
+  }
 });
-
 // Helper function to format dates
 function formatDate(timestamp) {
   const date = new Date(timestamp);
