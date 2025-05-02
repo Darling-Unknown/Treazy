@@ -413,6 +413,32 @@ app.post('/check-claim', async (req, res) => {
     res.status(500).json({ error: 'Server error during claim check' });
   }
 });
+// POST /register-referral
+app.post('/register-referral', async (req, res) => {
+  const { referrerId, newUserId, friendUsername } = req.body;
+
+  if (referrerId === newUserId) {
+    return res.json({ success: false, reason: "Self-referral not allowed" });
+  }
+
+  const alreadyReferred = await db.referrals.findOne({ where: { newUserId } });
+  if (alreadyReferred) {
+    return res.json({ success: false, reason: "User already referred" });
+  }
+
+  // Random reward between 500 - 10000
+  const reward = Math.floor(Math.random() * (10000 - 500 + 1)) + 500;
+
+  await db.referrals.create({
+    referrerId,
+    newUserId,
+    friendUsername,
+    reward
+  });
+
+  return res.json({ success: true, reward });
+});
+
 
 // Start server
 const PORT = process.env.PORT || 3000;
