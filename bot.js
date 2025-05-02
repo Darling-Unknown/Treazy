@@ -23,6 +23,28 @@ async function getfrens(userId) {
 
   return Markup.button.callback(randomLabel, 'frens');
 }
+async function registerReferral(referrerId, newUserId, friendUsername) {
+  try {
+    const response = await axios.post(`${WALLET_SERVER_URL}/register-referral`, {
+      referrerId: referrerId.toString(),
+      newUserId: newUserId.toString(),
+      friendUsername
+    });
+
+    if (response.data.success) {
+      const reward = response.data.reward;
+
+      // Save history for referrer
+      const message = `User @${friendUsername || 'Unknown'} joined using your link.`;
+      await saveHistory(referrerId, 'referral', message);
+
+      // Reward referrer
+      await updateBalance(referrerId, 'add', reward, 'Referral bonus');
+    }
+  } catch (error) {
+    console.error('Referral registration failed:', error.response?.data || error.message);
+  }
+}
 async function getUserWallet(userId) {
   try {
     const response = await axios.post(`${WALLET_SERVER_URL}/get-wallet`, {
@@ -181,12 +203,20 @@ async function handleClaim(userId) {
 
 // ================= BOT HANDLERS =================
 bot.start(async (ctx) => {
-  const userId = ctx.from.id;
+  const userId = ctx.from.id.toString();
   const wallet = await getUserWallet(userId);
   const points = await getBalance(userId);
 
   if (!wallet) {
     return ctx.reply('❌ Failed to load wallet. Please try again later.');
+  }
+
+  // Detect referrer if present
+  const referrerId = ctx.startPayload; // This gets the referral ID from start link
+
+  if (referrerId && referrerId !== userId) {
+    // Save referral if not same user
+    await registerReferral(referrerId, userId, ctx.from.username);
   }
 
   const welcomeMessage = `
