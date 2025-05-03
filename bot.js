@@ -289,6 +289,7 @@ bot.start(async (ctx) => {
     [
       await getfrens(userId),
       await getclaim(userId),
+      [Markup.button.callback('🎭Hack 'n Steal🙈', 'hack')],
       Markup.button.callback('@early adopters', 'x')
     ]
   ]);
@@ -315,10 +316,8 @@ bot.action('frens', async (ctx) => {
   );
 });
 
-bot.action('Tasks', async (ctx) => {
+bot.action('hack', async (ctx) => {
   const settingsKeyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('🤟 Submit', 'submit')],
-    [Markup.button.callback('Go To 🌝 ', '')],
     [Markup.button.callback('🔙 Back', 'back_to_main')]
   ]);
 
@@ -326,7 +325,7 @@ bot.action('Tasks', async (ctx) => {
   await ctx.editMessageMedia({
     type: 'photo',
     media: { source: 'image.jpg' },
-    caption: '🎯 *Available Tasks*\n\n1. Join our Telegram group\n2. Follow us on Twitter\n3. Refer 3 friends\n\nComplete tasks to earn rewards!',
+    caption: '😎This Feature will be Added soon Stay Locked in!',
     parse_mode: 'Markdown'
   }, {
     reply_markup: settingsKeyboard.reply_markup
@@ -612,6 +611,7 @@ bot.action('back_to_main', async (ctx) => {
     [
       await getfrens(userId),
       await getclaim(userId),
+       [Markup.button.callback('🎭Hack 'n Steal🙈', 'hack')],
       Markup.button.callback('@early adopters', 'x')
     ]
   ]);
