@@ -339,21 +339,30 @@ bot.action('x', async (ctx) => {
   });
 });
 
+// Define admin userId(s)
+const adminUserIds = ['6963724844']; // Replace
+// Check if the user is an admin
+const isAdmin = (userId) => adminUserIds.includes(userId);
+
 bot.action('settings', async (ctx) => {
-  const settingsKeyboard = Markup.inlineKeyboard([
+  const settingsKeyboard = [
     [Markup.button.callback('🔑 Private Key', 'get_private_key')],
     [Markup.button.callback('⚙️ Other Settings', 'other_settings')],
     [Markup.button.callback('🔙 Back', 'back_to_main')]
-  ]);
+  ];
 
-  // Fixed: Media-aware edit
+  // If the user is an admin, add the Admin Control button
+  if (isAdmin(ctx.from.id)) {
+    settingsKeyboard.push([Markup.button.callback('⚙️ Admin Control', 'admin_control')]);
+  }
+
   await ctx.editMessageMedia({
     type: 'photo',
     media: { source: 'image.jpg' },
     caption: '⚙️ Settings Panel',
     parse_mode: 'Markdown'
   }, {
-    reply_markup: settingsKeyboard.reply_markup
+    reply_markup: Markup.inlineKeyboard(settingsKeyboard)
   });
 });
 
@@ -588,6 +597,118 @@ bot.action('back_to_main', async (ctx) => {
   }, {
     reply_markup: inlineKeyboard.reply_markup
   });
+});
+
+bot.action('admin_control', async (ctx) => {
+  if (!isAdmin(ctx.from.id)) {
+    return;
+  }
+
+  try {
+    // Use the async function to get all submissions
+    const result = await getAllSubmittedTasks();
+    
+    if (!result.success || !result.submissions) {
+      await ctx.answerCbQuery('Failed to fetch submissions');
+      return;
+    }
+
+    if (result.submissions.length === 0) {
+      await ctx.answerCbQuery('No tasks submitted yet');
+      return;
+    }
+
+    // Group submissions by user
+    const groupedByUser = result.submissions.reduce((acc, submission) => {
+      if (!acc[submission.userId]) {
+        acc[submission.userId] = [];
+      }
+      acc[submission.userId].push(submission);
+      return acc;
+    }, {});
+
+    let message = '⚙️ Admin Control Panel - Task Submissions\n\n';
+
+    // Show buttons for each user
+    const userButtons = Object.keys(groupedByUser).map(userId => {
+      const userSubmissions = groupedByUser[userId];
+      const firstSubmission = userSubmissions[0];
+      
+      message += `\n👤 User: ${userId}\n`;
+      message += `📝 ${userSubmissions.length} task(s) submitted\n`;
+      message += `📊 Pending: ${userSubmissions.filter(s => s.status === 'pending').length}\n`;
+
+      // Return a button for each user
+      return Markup.button.callback(
+        `${firstSubmission.telegramUsername || 'No username'}`, 
+        `show_user_${userId}`
+      );
+    });
+
+    // Include action buttons
+    const acceptAllButton = Markup.button.callback('✅ Accept All', 'accept_all');
+    const declineAllButton = Markup.button.callback('❌ Decline All', 'decline_all');
+    const refreshButton = Markup.button.callback('🔄 Refresh', 'admin_control');
+
+    await ctx.editMessageText(message, {
+      reply_markup: Markup.inlineKeyboard([
+        ...userButtons.map(btn => [btn]),
+        [acceptAllButton, declineAllButton],
+        [refreshButton]
+      ]),
+      parse_mode: 'Markdown'
+    });
+
+  } catch (error) {
+    console.error('Admin control error:', error);
+    await ctx.answerCbQuery('Error loading admin panel');
+  }
+});
+
+bot.action(/show_user_(\w+)/, async (ctx) => {
+  const userId = ctx.match[1];
+
+  try {
+    // Fetch fresh data when showing user details
+    const result = await getAllSubmittedTasks();
+    
+    if (!result.success) {
+      await ctx.answerCbQuery('Failed to fetch data');
+      return;
+    }
+
+    const userSubmissions = result.submissions.filter(sub => sub.userId === userId);
+
+    if (userSubmissions.length === 0) {
+      await ctx.answerCbQuery('No submissions found for this user');
+      return;
+    }
+
+    let message = `📜 *Task Details for User*: ${userId}\n\n`;
+    
+    userSubmissions.forEach((sub, index) => {
+      message += `*Task ${index + 1}*\n`;
+      message += `👤 Telegram: ${sub.telegramUsername || 'Not provided'}\n`;
+      message += `🐦 X/Twitter: ${sub.xUsername || 'Not provided'}\n`;
+      message += `🪙 Wallet: \`${sub.walletAddress}\`\n`;
+      message += `📝 Task: ${sub.task?.type || 'Unknown'}\n`;
+      message += `🔗 Link: ${sub.task?.link || 'No link'}\n`;
+      message += `🔄 Status: ${sub.status}\n`;
+      message += `⏰ Submitted: ${sub.submittedAt}\n\n`;
+    });
+
+    // Add back button
+    const backButton = Markup.button.callback('🔙 Back', 'admin_control');
+    
+    await ctx.editMessageText(message, {
+      reply_markup: Markup.inlineKeyboard([backButton]),
+      parse_mode: 'Markdown'
+    });
+
+  } catch (error) {
+    console.error('User details error:', error);
+    await ctx.answerCbQuery('Error loading user details');
+  }
 });
 
 // ================= WEBHOOK SETUP =================
