@@ -87,6 +87,7 @@ app.post('/create-task', async (req, res) => {
 });
 
 
+
 // Updated /get-tasks endpoint (no deleteAt filter)
 app.get('/get-tasks', async (req, res) => {
   const { userId } = req.query;
@@ -122,9 +123,9 @@ app.get('/get-tasks', async (req, res) => {
     res.status(500).json({ error: 'Failed to fetch tasks' });
   }
 });
-// Updated submitTask endpoint
+// Submit task completion with additional info directly in the submission
 app.post('/submit-task', async (req, res) => {
-  const { userId, taskId } = req.body;
+  const { userId, taskId, walletAddress, telegramUsername, xUsername } = req.body;
 
   try {
     // Check for existing submission
@@ -139,8 +140,12 @@ app.post('/submit-task', async (req, res) => {
     }
 
     const submissionRef = await db.collection('taskSubmissions').add({
-      ...req.body,
-      completed: true, // Mark as completed
+      userId,
+      taskId,
+      walletAddress,
+      telegramUsername,  // Included in submission
+      xUsername,          // Included in submission
+      completed: true,    // Mark as completed
       status: 'pending',
       submittedAt: admin.firestore.FieldValue.serverTimestamp()
     });
@@ -150,11 +155,85 @@ app.post('/submit-task', async (req, res) => {
       submissionId: submissionRef.id
     });
   } catch (error) {
-    console.error(error);
+    console.error('Submission error:', error);
     res.status(500).json({ error: 'Submission failed' });
   }
 });
+// Get submitted tasks for each user (filter by userId)
+app.get('/submitted-tasks', async (req, res) => {
+  const { userId } = req.query;
 
+  try {
+    // Fetch all task submissions for a specific user
+    const submissionsSnapshot = await db.collection('taskSubmissions')
+      .where('userId', '==', userId)
+      .get();
+
+    const submissions = [];
+
+    submissionsSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+
+      // Fetch task info for each submission
+      let task = null;
+      try {
+        const taskDoc = await db.collection('tasks').doc(data.taskId).get();
+        if (taskDoc.exists) {
+          task = taskDoc.data();
+        }
+      } catch (e) {
+        console.warn(`Failed to fetch task ${data.taskId}`);
+      }
+
+      submissions.push({
+        id: doc.id,
+        ...data,
+        task,                      // Attach task info
+        submittedAt: data.submittedAt?.toDate()?.toISOString()
+      });
+    });
+
+    res.json({ submissions });
+  } catch (error) {
+    console.error('Error fetching submitted tasks:', error);
+    res.status(500).json({ error: 'Failed to fetch submitted tasks' });
+  }
+});
+// Get all submitted tasks for all users
+app.get('/all-submitted-tasks', async (req, res) => {
+  try {
+    const submissionsSnapshot = await db.collection('taskSubmissions').get();
+
+    const submissions = [];
+
+    submissionsSnapshot.docs.forEach(doc => {
+      const data = doc.data();
+
+      // Fetch task info for each submission
+      let task = null;
+      try {
+        const taskDoc = await db.collection('tasks').doc(data.taskId).get();
+        if (taskDoc.exists) {
+          task = taskDoc.data();
+        }
+      } catch (e) {
+        console.warn(`Failed to fetch task ${data.taskId}`);
+      }
+
+      submissions.push({
+        id: doc.id,
+        ...data,
+        task,                      // Attach task info
+        submittedAt: data.submittedAt?.toDate()?.toISOString()
+      });
+    });
+
+    res.json({ submissions });
+  } catch (error) {
+    console.error('Error fetching all submitted tasks:', error);
+    res.status(500).json({ error: 'Failed to fetch all submitted tasks' });
+  }
+});
 // Endpoint to get or create wallet
 app.post('/get-wallet', async (req, res) => {
   const { userId } = req.body;
