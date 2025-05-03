@@ -339,22 +339,30 @@ bot.action('x', async (ctx) => {
   });
 });
 
-// Define admin userId(s)
-const adminUserIds = ['6963724844']; // Replace
-// Check if the user is an admin
-const isAdmin = (userId) => adminUserIds.includes(userId);
+// Define admin userId(s) - ensure these are numbers if your Telegram IDs are numbers
+const adminUserIds = [6963724844]; // Removed quotes to make it a number
+
+// Improved admin check that handles both string and number comparisons
+const isAdmin = (userId) => {
+  // Convert both to strings for reliable comparison
+  const userIdStr = userId.toString();
+  return adminUserIds.some(adminId => adminId.toString() === userIdStr);
+};
 
 bot.action('settings', async (ctx) => {
   try {
-    // Create the basic settings keyboard
+    console.log('User ID:', ctx.from.id, 'Type:', typeof ctx.from.id); // Debug log
+    
     const settingsKeyboard = [
       [Markup.button.callback('🔑 Private Key', 'get_private_key')],
       [Markup.button.callback('⚙️ Other Settings', 'other_settings')],
       [Markup.button.callback('🔙 Back', 'back_to_main')]
     ];
 
-    // Add Admin Control button only for admins
-    if (isAdmin(ctx.from.id.toString())) {  // Ensure we compare strings
+    // Debug admin check
+    console.log('Is admin:', isAdmin(ctx.from.id), 'for ID:', ctx.from.id);
+    
+    if (isAdmin(ctx.from.id)) {
       settingsKeyboard.unshift([Markup.button.callback('👑 Admin Control', 'admin_control')]);
     }
 
@@ -617,70 +625,92 @@ bot.action('admin_control', async (ctx) => {
   }
 
   try {
+    // Show loading indicator
+    await ctx.answerCbQuery('⌛ Loading submissions...');
+
+    // Fetch submissions
     const result = await getAllSubmittedTasks();
 
     if (!result.success || !result.submissions) {
-      await ctx.answerCbQuery('❌ Failed to fetch submissions');
+      await ctx.editMessageText('❌ Failed to fetch submissions');
       return;
     }
 
     if (result.submissions.length === 0) {
-      await ctx.reply('📭 No tasks submitted yet');
+      await ctx.editMessageText('📭 No tasks submitted yet');
       return;
     }
 
     // Group submissions by user
     const groupedByUser = result.submissions.reduce((acc, submission) => {
-      acc[submission.userId] = acc[submission.userId] || [];
+      if (!acc[submission.userId]) {
+        acc[submission.userId] = [];
+      }
       acc[submission.userId].push(submission);
       return acc;
     }, {});
 
-    // Prepare message
-    let message = [
-      '⚙️ *Admin Control Panel*',
-      `📊 Total Submissions: ${result.submissions.length}`,
-      `👥 Unique Users: ${Object.keys(groupedByUser).length}\n`
-    ].join('\n');
+    // Prepare message and buttons
+    let message = '👑 *Admin Control Panel*\n\n';
+    message += `📊 Total Submissions: ${result.submissions.length}\n`;
+    message += `👥 Unique Users: ${Object.keys(groupedByUser).length}\n\n`;
 
-    // Create buttons
-    const buttons = Object.entries(groupedByUser).map(([userId, submissions]) => {
-      const firstSub = submissions[0];
-      const pendingCount = submissions.filter(s => s.status === 'pending').length;
+    const userButtons = Object.keys(groupedByUser).map(userId => {
+      const userSubmissions = groupedByUser[userId];
+      const firstSubmission = userSubmissions[0];
+      const username = firstSubmission.telegramUsername 
+        ? `@${firstSubmission.telegramUsername.replace('@', '')}`
+        : `User ${userId.slice(0, 6)}...`;
       
       return [Markup.button.callback(
-        `👤 ${firstSub.telegramUsername || 'User'} (${submissions.length} tasks, ${pendingCount} pending)`,
+        `${username} (${userSubmissions.length})`, 
         `show_user_${userId}`
       )];
     });
 
-    // Add control buttons
-    buttons.push([
+    // Action buttons row
+    const actionButtons = [
       Markup.button.callback('✅ Accept All', 'accept_all'),
-      Markup.button.callback('❌ Decline All', 'decline_all')
-    ]);
-    buttons.push([Markup.button.callback('🔄 Refresh', 'admin_control')]);
+      Markup.button.callback('❌ Decline All', 'decline_all'),
+      Markup.button.callback('🔄 Refresh', 'admin_control')
+    ];
 
-    // Send or update message
-    if (ctx.callbackQuery.message) {
+    // Try to edit the message (works for both text and media messages)
+    try {
       await ctx.editMessageText(message, {
         parse_mode: 'Markdown',
-        reply_markup: { inline_keyboard: buttons }
+        reply_markup: {
+          inline_keyboard: [
+            ...userButtons,
+            actionButtons
+          ]
+        }
       });
-    } else {
-      await ctx.reply(message, {
-        parse_mode: 'Markdown',
-        reply_markup: { inline_keyboard: buttons }
+    } catch (editError) {
+      // If editing fails (likely because previous message was media), send new message
+      await ctx.replyWithMarkdown(message, {
+        reply_markup: {
+          inline_keyboard: [
+            ...userButtons,
+            actionButtons
+          ]
+        }
       });
+      
+      // Delete the original message if possible
+      try {
+        await ctx.deleteMessage();
+      } catch (deleteError) {
+        console.log('Could not delete original message');
+      }
     }
 
   } catch (error) {
-    console.error('Admin error:', error);
-    await ctx.answerCbQuery('⚠️ Error loading panel');
-    await ctx.reply('An error occurred. Please try again.');
+    console.error('Admin control error:', error);
+    await ctx.answerCbQuery('❌ Error loading panel');
+    await ctx.reply('An error occurred while loading admin controls. Please try again.');
   }
 });
-
 bot.action(/show_user_(\w+)/, async (ctx) => {
   const userId = ctx.match[1];
 
