@@ -22,7 +22,7 @@ const db = admin.firestore();
 
 // Initialize BSC provider
 const provider = new ethers.providers.JsonRpcProvider(
-  'https://bsc-testnet.publicnode.com' // BSC Testnet RPC
+  'https://bsc-dataseed.binance.org/' // BSC Testnet RPC
 );
 
 const app = express();
