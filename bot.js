@@ -285,11 +285,11 @@ bot.start(async (ctx) => {
     [
       await getHistoryButton(userId),
       await getset(userId),
+      Markup.button.callback('🎭Hack `n Steal🙈', 'hack'),
     ],
     [
       await getfrens(userId),
       await getclaim(userId),
-      Markup.button.callback('🎭Hack `n Steal🙈', 'hack'),
       Markup.button.callback('@early adopters', 'x')
     ]
   ]);
@@ -607,11 +607,11 @@ bot.action('back_to_main', async (ctx) => {
     [
       await getHistoryButton(userId),
       await getset(userId),
+     Markup.button.callback('🎭Hack `n Steal🙈', 'hack'),
     ],
     [
       await getfrens(userId),
       await getclaim(userId),
-      Markup.button.callback('🎭Hack `n Steal🙈', 'hack'),
       Markup.button.callback('@early adopters', 'x')
     ]
   ]);
