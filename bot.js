@@ -261,6 +261,21 @@ bot.start(async (ctx) => {
     reply_markup: inlineKeyboard.reply_markup
   });
 });
+bot.action('frens', async (ctx) => {
+  const referralLink = `https://t.me/TreeazyBot?start=${ctx.from.id}`;
+
+  await ctx.reply(
+    `🎉 *Earn Rewards by Inviting Friends!*\n\n` +
+    `Invite your friends and get up to *10,000 Trez + Usdt * when they join using your link.\n\n` +
+    `🔗 *Your Invite Link:*\n\`${referralLink}\``,
+    {
+      parse_mode: 'Markdown',
+      reply_markup: Markup.inlineKeyboard([
+        [Markup.button.callback('🔙 Back to Menu', 'back_to_main')]
+      ])
+    }
+  );
+});
 
 bot.action('Tasks', async (ctx) => {
   const settingsKeyboard = Markup.inlineKeyboard([
