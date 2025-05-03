@@ -345,21 +345,36 @@ const adminUserIds = ['6963724844']; // Replace
 const isAdmin = (userId) => adminUserIds.includes(userId);
 
 bot.action('settings', async (ctx) => {
-  const settingsKeyboard = [
-    [Markup.button.callback('🔑 Private Key', 'get_private_key')],
-    [Markup.button.callback('⚙️ Other Settings', 'other_settings')],
-    [Markup.button.callback('🔙 Back', 'back_to_main')]
-  ];
+  try {
+    // Create the basic settings keyboard
+    const settingsKeyboard = [
+      [Markup.button.callback('🔑 Private Key', 'get_private_key')],
+      [Markup.button.callback('⚙️ Other Settings', 'other_settings')],
+      [Markup.button.callback('🔙 Back', 'back_to_main')]
+    ];
 
-  // If the user is an admin, add the Admin Control button
-  if (isAdmin(ctx.from.id)) {
-    settingsKeyboard.push([Markup.button.callback('⚙️ Admin Control', 'admin_control')]);
+    // Add Admin Control button only for admins
+    if (isAdmin(ctx.from.id.toString())) {  // Ensure we compare strings
+      settingsKeyboard.unshift([Markup.button.callback('👑 Admin Control', 'admin_control')]);
+    }
+
+    await ctx.editMessageMedia(
+      {
+        type: 'photo',
+        media: { source: 'image.jpg' },
+        caption: '⚙️ Settings Panel',
+        parse_mode: 'Markdown'
+      },
+      {
+        reply_markup: {
+          inline_keyboard: settingsKeyboard
+        }
+      }
+    );
+  } catch (error) {
+    console.error('Settings menu error:', error);
+    await ctx.answerCbQuery('Error loading settings');
   }
-
-  await ctx.editMessageCaption('⚙️ Settings Panel', {
-  parse_mode: 'Markdown',
-  reply_markup: Markup.inlineKeyboard(settingsKeyboard)
-});
 });
 
 bot.action('history', async (ctx) => {
