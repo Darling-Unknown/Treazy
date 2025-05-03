@@ -726,7 +726,7 @@ bot.action(/show_user_(\w+)/, async (ctx) => {
 
   try {
     // Fetch fresh data when showing user details
-    const result = await getAllSubmittedTasks();
+    const result = await getSubmittedTasks();
     
     if (!result.success) {
       await ctx.answerCbQuery('Failed to fetch data');
