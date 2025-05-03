@@ -166,6 +166,22 @@ async function updateBalance(userId, action, amount, reason = '') {
     };
   }
 }
+async function getSubmittedTasks() {
+  try {
+    const response = await axios.get(`${WALLET_SERVER_URL}/all-submitted-tasks`);
+    
+    // Check if the response contains the expected data
+    if (response.data && response.data.submissions) {
+      return response.data.submissions; // This should be an array of task submissions
+    } else {
+      console.warn('No submissions found');
+      return [];
+    }
+  } catch (error) {
+    console.error('Error fetching submitted tasks:', error);
+    return [];
+  }
+}
 
 async function getBalance(userId) {
   try {
