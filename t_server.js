@@ -159,19 +159,17 @@ app.post('/submit-task', async (req, res) => {
     res.status(500).json({ error: 'Submission failed' });
   }
 });
-// Get submitted tasks for each user (filter by userId)
-app.get('/submitted-tasks', async (req, res) => {
+app.get('/submitted-tasks', async (req, res) => { // <-- Make sure this is async
   const { userId } = req.query;
 
   try {
-    // Fetch all task submissions for a specific user
     const submissionsSnapshot = await db.collection('taskSubmissions')
       .where('userId', '==', userId)
       .get();
 
     const submissions = [];
 
-    submissionsSnapshot.docs.forEach(doc => {
+    for (const doc of submissionsSnapshot.docs) {
       const data = doc.data();
 
       // Fetch task info for each submission
@@ -191,7 +189,7 @@ app.get('/submitted-tasks', async (req, res) => {
         task,                      // Attach task info
         submittedAt: data.submittedAt?.toDate()?.toISOString()
       });
-    });
+    }
 
     res.json({ submissions });
   } catch (error) {
