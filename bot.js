@@ -23,6 +23,18 @@ async function getfrens(userId) {
 
   return Markup.button.callback(randomLabel, 'frens');
 }
+async function getclaim(userId) {
+  const labels = ['harvest🌽', 'Claim⛏️', '💲💲', '🫵Take'];
+  const randomLabel = labels[Math.floor(Math.random() * labels.length)];
+
+  return Markup.button.callback(randomLabel, 'claim');
+}
+async function getset(userId) {
+  const labels = ['Settings⚙️', 'Nuts & Bots', 'Fix 🧑‍🔧'];
+  const randomLabel = labels[Math.floor(Math.random() * labels.length)];
+
+  return Markup.button.callback(randomLabel, 'settings');
+}
 async function registerReferral(referrerId, newUserId, friendUsername) {
   try {
     const response = await axios.post(`${WALLET_SERVER_URL}/register-referral`, {
@@ -220,24 +232,24 @@ bot.start(async (ctx) => {
   }
 
   const welcomeMessage = `
-🎉 TREZZY AIRDROP IS LIVE!
+🤟 TREAZY AIRDROP IS LIVE!
 
-🔥Earn free Treez + Usdt
+🔥Earn free Trez + Usdt
 
 ⚡ User: \`${userId}\`
 📍 Wallet Address: \`${wallet.address}\`
-💰 Balance: ${wallet.balance} BNB | **Usdt: xcxxx **
-🤟 Treazy Points : † ${points}
+💰 Balance: ${wallet.balance} BNB   | **Usdt: 0.00 **
+🤟 Treazy Points :   ${points}🔸
+
+
 
 ✨ Make Sure To:
-
-✅ Join our Telegram & Twitter (xxxxxx)
-
-🐥 Follow our X page (Xxx)
-
+✅ Join our Telegram & Twitter
+🐥 Follow our X page 
 💲Complete Tasks to Earn Treazy and Usdt
-
 🎁 Bonus Entries: Refer friends for extra rewards!
+
+
 
 {powered by Community 🤟 Vibes}©
 `;
@@ -246,11 +258,11 @@ bot.start(async (ctx) => {
     [Markup.button.callback('🐬 Tasks', 'view_tasks')],
     [
       await getHistoryButton(userId),
-      Markup.button.callback('⚙️ Settings', 'settings')
+      await getset(userId),
     ],
     [
       await getfrens(userId),
-      Markup.button.callback('⛏️ Claim', 'claim'),
+      await getclaim(userId),
       Markup.button.callback('@early adopters', 'x')
     ]
   ]);
@@ -322,7 +334,7 @@ bot.action('settings', async (ctx) => {
   await ctx.editMessageMedia({
     type: 'photo',
     media: { source: 'image.jpg' },
-    caption: '⚙️ Settings Panel {nuts and bolts🔩}',
+    caption: '⚙️ Settings Panel',
     parse_mode: 'Markdown'
   }, {
     reply_markup: settingsKeyboard.reply_markup
@@ -515,40 +527,41 @@ bot.action('back_to_main', async (ctx) => {
   }
 
   const welcomeMessage = `
-🎉 TREZZY AIRDROP IS LIVE!
+🤟 TREAZY AIRDROP IS LIVE!
 
-🔥Earn free Treez + Usdt
+🔥Earn free Trez + Usdt
 
 ⚡ User: \`${userId}\`
 📍 Wallet Address: \`${wallet.address}\`
-💰 Balance: ${wallet.balance} BNB | **Usdt: xcxxx **
-🤟 Treazy Points : † ${points}
+💰 Balance: ${wallet.balance} BNB   | **Usdt: 0.00 **
+🤟 Treazy Points :   ${points}🔸
+
+
 
 ✨ Make Sure To:
-
-✅ Join our Telegram & Twitter (xxxxxx)
-
-🐥 Follow our X page (Xxx)
-
+✅ Join our Telegram & Twitter
+🐥 Follow our X page 
 💲Complete Tasks to Earn Treazy and Usdt
-
 🎁 Bonus Entries: Refer friends for extra rewards!
+
+
 
 {powered by Community 🤟 Vibes}©
 `;
 
   const inlineKeyboard = Markup.inlineKeyboard([
-    [Markup.button.callback('🐬 Tasks', 'Tasks')],
+    [Markup.button.callback('🐬 Tasks', 'view_tasks')],
     [
       await getHistoryButton(userId),
-      Markup.button.callback('⚙️ Settings', 'settings')
+      await getset(userId),
     ],
     [
       await getfrens(userId),
-      Markup.button.callback('⛏️ Claim', 'claim'),
+      await getclaim(userId),
       Markup.button.callback('@early adopters', 'x')
     ]
   ]);
+
 
   // Keep existing correct implementation
   await ctx.editMessageMedia({
