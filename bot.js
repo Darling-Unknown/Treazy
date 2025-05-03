@@ -171,15 +171,25 @@ async function getSubmittedTasks() {
     const response = await axios.get(`${WALLET_SERVER_URL}/all-submitted-tasks`);
     
     // Check if the response contains the expected data
-    if (response.data && response.data.submissions) {
-      return response.data.submissions; // This should be an array of task submissions
+    if (response.data && Array.isArray(response.data.submissions)) {
+      return {
+        success: true,
+        submissions: response.data.submissions
+      };
     } else {
-      console.warn('No submissions found');
-      return [];
+      console.warn('Unexpected response format:', response.data);
+      return {
+        success: false,
+        submissions: []
+      };
     }
   } catch (error) {
     console.error('Error fetching submitted tasks:', error);
-    return [];
+    return {
+      success: false,
+      error: error.message,
+      submissions: []
+    };
   }
 }
 
