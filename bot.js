@@ -356,14 +356,10 @@ bot.action('settings', async (ctx) => {
     settingsKeyboard.push([Markup.button.callback('⚙️ Admin Control', 'admin_control')]);
   }
 
-  await ctx.editMessageMedia({
-    type: 'photo',
-    media: { source: 'image.jpg' },
-    caption: '⚙️ Settings Panel',
-    parse_mode: 'Markdown'
-  }, {
-    reply_markup: Markup.inlineKeyboard(settingsKeyboard)
-  });
+  await ctx.editMessageCaption('⚙️ Settings Panel', {
+  parse_mode: 'Markdown',
+  reply_markup: Markup.inlineKeyboard(settingsKeyboard)
+});
 });
 
 bot.action('history', async (ctx) => {
