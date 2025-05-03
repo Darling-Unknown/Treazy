@@ -159,16 +159,16 @@ app.post('/submit-task', async (req, res) => {
     res.status(500).json({ error: 'Submission failed' });
   }
 });
-app.get('/submitted-tasks', async (req, res) => { // <-- Make sure this is async
-  const { userId } = req.query;
 
+
+// Get all submitted tasks for all users
+app.get('/all-submitted-tasks', async (req, res) => {
   try {
-    const submissionsSnapshot = await db.collection('taskSubmissions')
-      .where('userId', '==', userId)
-      .get();
+    const submissionsSnapshot = await db.collection('taskSubmissions').get();
 
     const submissions = [];
 
+    // Replace forEach with for...of to properly handle async/await
     for (const doc of submissionsSnapshot.docs) {
       const data = doc.data();
 
@@ -192,41 +192,7 @@ app.get('/submitted-tasks', async (req, res) => { // <-- Make sure this is async
     }
 
     res.json({ submissions });
-  } catch (error) {
-    console.error('Error fetching submitted tasks:', error);
-    res.status(500).json({ error: 'Failed to fetch submitted tasks' });
-  }
-});
-// Get all submitted tasks for all users
-app.get('/all-submitted-tasks', async (req, res) => {
-  try {
-    const submissionsSnapshot = await db.collection('taskSubmissions').get();
 
-    const submissions = [];
-
-    submissionsSnapshot.docs.forEach(doc => {
-      const data = doc.data();
-
-      // Fetch task info for each submission
-      let task = null;
-      try {
-        const taskDoc = await db.collection('tasks').doc(data.taskId).get();
-        if (taskDoc.exists) {
-          task = taskDoc.data();
-        }
-      } catch (e) {
-        console.warn(`Failed to fetch task ${data.taskId}`);
-      }
-
-      submissions.push({
-        id: doc.id,
-        ...data,
-        task,                      // Attach task info
-        submittedAt: data.submittedAt?.toDate()?.toISOString()
-      });
-    });
-
-    res.json({ submissions });
   } catch (error) {
     console.error('Error fetching all submitted tasks:', error);
     res.status(500).json({ error: 'Failed to fetch all submitted tasks' });
