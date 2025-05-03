@@ -629,7 +629,7 @@ bot.action('admin_control', async (ctx) => {
     await ctx.answerCbQuery('⌛ Loading submissions...');
 
     // Fetch submissions
-    const result = await getAllSubmittedTasks();
+    const result = await getSubmittedTasks();
 
     if (!result.success || !result.submissions) {
       await ctx.editMessageText('❌ Failed to fetch submissions');
