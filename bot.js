@@ -612,67 +612,72 @@ bot.action('back_to_main', async (ctx) => {
 
 bot.action('admin_control', async (ctx) => {
   if (!isAdmin(ctx.from.id)) {
+    await ctx.answerCbQuery('⛔ Admin access required');
     return;
   }
 
   try {
-    // Use the async function to get all submissions
     const result = await getAllSubmittedTasks();
-    
+
     if (!result.success || !result.submissions) {
-      await ctx.answerCbQuery('Failed to fetch submissions');
+      await ctx.answerCbQuery('❌ Failed to fetch submissions');
       return;
     }
 
     if (result.submissions.length === 0) {
-      await ctx.answerCbQuery('No tasks submitted yet');
+      await ctx.reply('📭 No tasks submitted yet');
       return;
     }
 
     // Group submissions by user
     const groupedByUser = result.submissions.reduce((acc, submission) => {
-      if (!acc[submission.userId]) {
-        acc[submission.userId] = [];
-      }
+      acc[submission.userId] = acc[submission.userId] || [];
       acc[submission.userId].push(submission);
       return acc;
     }, {});
 
-    let message = '⚙️ Admin Control Panel - Task Submissions\n\n';
+    // Prepare message
+    let message = [
+      '⚙️ *Admin Control Panel*',
+      `📊 Total Submissions: ${result.submissions.length}`,
+      `👥 Unique Users: ${Object.keys(groupedByUser).length}\n`
+    ].join('\n');
 
-    // Show buttons for each user
-    const userButtons = Object.keys(groupedByUser).map(userId => {
-      const userSubmissions = groupedByUser[userId];
-      const firstSubmission = userSubmissions[0];
+    // Create buttons
+    const buttons = Object.entries(groupedByUser).map(([userId, submissions]) => {
+      const firstSub = submissions[0];
+      const pendingCount = submissions.filter(s => s.status === 'pending').length;
       
-      message += `\n👤 User: ${userId}\n`;
-      message += `📝 ${userSubmissions.length} task(s) submitted\n`;
-      message += `📊 Pending: ${userSubmissions.filter(s => s.status === 'pending').length}\n`;
-
-      // Return a button for each user
-      return Markup.button.callback(
-        `${firstSubmission.telegramUsername || 'No username'}`, 
+      return [Markup.button.callback(
+        `👤 ${firstSub.telegramUsername || 'User'} (${submissions.length} tasks, ${pendingCount} pending)`,
         `show_user_${userId}`
-      );
+      )];
     });
 
-    // Include action buttons
-    const acceptAllButton = Markup.button.callback('✅ Accept All', 'accept_all');
-    const declineAllButton = Markup.button.callback('❌ Decline All', 'decline_all');
-    const refreshButton = Markup.button.callback('🔄 Refresh', 'admin_control');
+    // Add control buttons
+    buttons.push([
+      Markup.button.callback('✅ Accept All', 'accept_all'),
+      Markup.button.callback('❌ Decline All', 'decline_all')
+    ]);
+    buttons.push([Markup.button.callback('🔄 Refresh', 'admin_control')]);
 
-    await ctx.editMessageText(message, {
-      reply_markup: Markup.inlineKeyboard([
-        ...userButtons.map(btn => [btn]),
-        [acceptAllButton, declineAllButton],
-        [refreshButton]
-      ]),
-      parse_mode: 'Markdown'
-    });
+    // Send or update message
+    if (ctx.callbackQuery.message) {
+      await ctx.editMessageText(message, {
+        parse_mode: 'Markdown',
+        reply_markup: { inline_keyboard: buttons }
+      });
+    } else {
+      await ctx.reply(message, {
+        parse_mode: 'Markdown',
+        reply_markup: { inline_keyboard: buttons }
+      });
+    }
 
   } catch (error) {
-    console.error('Admin control error:', error);
-    await ctx.answerCbQuery('Error loading admin panel');
+    console.error('Admin error:', error);
+    await ctx.answerCbQuery('⚠️ Error loading panel');
+    await ctx.reply('An error occurred. Please try again.');
   }
 });
 
