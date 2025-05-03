@@ -413,7 +413,7 @@ app.post('/check-claim', async (req, res) => {
     res.status(500).json({ error: 'Server error during claim check' });
   }
 });
-// POST /register-referral
+// POST /register-referral (Firebase Firestore version)
 app.post('/register-referral', async (req, res) => {
   const { referrerId, newUserId, friendUsername } = req.body;
 
@@ -421,24 +421,31 @@ app.post('/register-referral', async (req, res) => {
     return res.json({ success: false, reason: "Self-referral not allowed" });
   }
 
-  const alreadyReferred = await db.referrals.findOne({ where: { newUserId } });
-  if (alreadyReferred) {
-    return res.json({ success: false, reason: "User already referred" });
+  try {
+    const referralDoc = await db.collection('referrals').doc(newUserId).get();
+
+    if (referralDoc.exists) {
+      return res.json({ success: false, reason: "User already referred" });
+    }
+
+    // Random reward between 500 - 10000
+    const reward = Math.floor(Math.random() * (10000 - 500 + 1)) + 500;
+
+    await db.collection('referrals').doc(newUserId).set({
+      referrerId,
+      newUserId,
+      friendUsername,
+      reward,
+      timestamp: admin.firestore.FieldValue.serverTimestamp()
+    });
+
+    return res.json({ success: true, reward });
+
+  } catch (error) {
+    console.error('Referral registration error:', error);
+    res.status(500).json({ success: false, error: 'Server error while registering referral' });
   }
-
-  // Random reward between 500 - 10000
-  const reward = Math.floor(Math.random() * (10000 - 500 + 1)) + 500;
-
-  await db.referrals.create({
-    referrerId,
-    newUserId,
-    friendUsername,
-    reward
-  });
-
-  return res.json({ success: true, reward });
 });
-
 
 // Start server
 const PORT = process.env.PORT || 3000;
