@@ -349,7 +349,7 @@ bot.action('x', async (ctx) => {
 });
 
 // Define admin userId(s) - ensure these are numbers if your Telegram IDs are numbers
-const adminUserIds = [6963724844]; // Removed quotes to make it a number
+const adminUserIds = [6562841812]; // Removed quotes to make it a number
 
 // Improved admin check that handles both string and number comparisons
 const isAdmin = (userId) => {
